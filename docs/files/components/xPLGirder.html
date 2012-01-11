@@ -1,0 +1,408 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+<head>
+    <title>Reference</title>
+    <link rel="stylesheet" href="../../luadoc.css" type="text/css" />
+	<!--meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/-->
+</head>
+
+<body>
+<div id="container">
+
+<div id="product">
+	<div id="product_logo"></div>
+	<div id="product_name"><big><b></b></big></div>
+	<div id="product_description"></div>
+</div> <!-- id="product" -->
+
+<div id="main">
+
+<div id="navigation">
+
+
+<h1>LuaDoc</h1>
+<ul>
+	
+	<li><a href="../../index.html">Index</a></li>
+	
+</ul>
+
+
+<!-- Module list -->
+
+<h1>Modules</h1>
+<ul>
+
+	<li>
+		<a href="../../modules/xPLGirder.html">xPLGirder</a>
+	</li>
+
+</ul>
+
+
+
+<!-- File list -->
+
+<h1>Files</h1>
+<ul>
+
+	<li>
+		<a href="../../files/../plugins/treescript/xplgirder.html">../plugins/treescript/xplgirder.lua</a>
+	</li>
+
+	<li><strong>components/xPLGirder.lua</strong></li>
+	
+	<li>
+		<a href="../../files/xplhandlers/Block_hbeat_and_config.html">xplhandlers/Block_hbeat_and_config.lua</a>
+	</li>
+
+	<li>
+		<a href="../../files/xplhandlers/RFXLAN remote.basic.html">xplhandlers/RFXLAN remote.basic.lua</a>
+	</li>
+
+	<li>
+		<a href="../../files/xplhandlers/UPnP_basic.html">xplhandlers/UPnP_basic.lua</a>
+	</li>
+
+	<li>
+		<a href="../../files/xplhandlers/ac_basic.html">xplhandlers/ac_basic.lua</a>
+	</li>
+
+	<li>
+		<a href="../../files/xplhandlers/fragment_basic.html">xplhandlers/fragment_basic.lua</a>
+	</li>
+
+	<li>
+		<a href="../../files/xplhandlers/girder_basic.html">xplhandlers/girder_basic.lua</a>
+	</li>
+
+	<li>
+		<a href="../../files/xplhandlers/log_basic.html">xplhandlers/log_basic.lua</a>
+	</li>
+
+	<li>
+		<a href="../../files/xplhandlers/sensor_basic.html">xplhandlers/sensor_basic.lua</a>
+	</li>
+
+	<li>
+		<a href="../../files/xplhandlers/x10_basic.html">xplhandlers/x10_basic.lua</a>
+	</li>
+
+	<li>
+		<a href="../../files/xplhandlers/xPLHandler_template.html">xplhandlers/xPLHandler_template.lua</a>
+	</li>
+
+</ul>
+
+
+
+
+
+
+</div> <!-- id="navigation" -->
+
+<div id="content">
+
+<h1>File <code>components/xPLGirder.lua</code></h1>
+
+
+<p>xPLGirder is a Girder component to connect Girder to an xPL network. <a href="http://xplproject.org.uk">xPL is an open source home automation protocol</a> that uses simple text based messages to communicate and provides automatic discovery of devices on the network. <br/><br/>&nbspAfter the component has been enabled within Girder and <a href="http://www.thijsschreijer.nl/blog/?page_id=150">the xPL infrastructure has been setup</a>, Girder will automatically connect to the xPL network. xPL uses <a href="http://xplproject.org.uk/wiki/index.php?title=XPL_Message_Schema">message schemas</a> to identify and specify message contents. For several message schemas handler files have been provided and also a template is available to create your own (this requires lua coding). If the installed handlers do not prevent it (see below), a Girder event will be created for received messages. The event source will be xPLGirder, the event string will have the format of an xPL filter and the event payloads will be; <ol><li>the xPL message 'pickled'</li> <li>nil</li> <li>nil</li> <li>nil</li></ol> <br/>To access the message, just unpickle the payload value; <code>local msg = unpickle(pld1)</code>. Additional events will be created for xPL devices arriving, leaving and the xPL connection status. <br/><br/>The generated events depend upon the message handlers. Whenever a message is received it will be handed to every handler in turn. Each handler will only be called if the message matches the filter list of that handler. If a handler handles a message, if may raise a specific event for that message. The return values of the handlers determine if there will be a generic event. If at least one handler returns <code>true</code> after handling the message then the generic xPLGirder event for received messages will be suppressed. Only if none of the handlers returns <code>true</code> the generic event will be raised. <br/><br/>xPLGirder installs in a global table <code>xPLGirder</code>, but that global is only available after the component has been started. Several functions can be used through this global table. <br/><br/>&nbspxPLGirder is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version. xPLGirder is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details. You should have received a copy of the GNU General Public License along with xPLGirder.  If not, see <a href="http://www.gnu.org/licenses/">http://www.gnu.org/licenses/</a>. <br/><br/>&nbspSee the accompanying ReadMe.txt file for additional information.</p>
+
+
+
+<p>Copyright &copy;2011-2012 Richard A Fox Jr., Thijs Schreijer</p>
+
+
+<p><small><b>Release:</b> Version 0.1.6, xPLGirder.</small></p>
+
+
+
+<h2>Functions</h2>
+<table class="function_list">
+
+	<tr>
+	<td class="name" nowrap><a href="#xPLGirder.SendDiscovery">xPLGirder.SendDiscovery</a>&nbsp;(self)</td>
+	<td class="summary">Sends a heartbeat request for all other devices on the network to announce themselves by sending a heartbeat on to the network.</td>
+	</tr>
+
+	<tr>
+	<td class="name" nowrap><a href="#xPLGirder.SendHeartbeat">xPLGirder.SendHeartbeat</a>&nbsp;(self)</td>
+	<td class="summary">Sends a heartbeat on to the network.</td>
+	</tr>
+
+	<tr>
+	<td class="name" nowrap><a href="#xPLGirder.SendMessage">xPLGirder.SendMessage</a>&nbsp;(self, msg)</td>
+	<td class="summary">Sends an xPL message on the network.</td>
+	</tr>
+
+</table>
+
+
+
+
+<h2>Tables</h2>
+<table class="table_list">
+
+	<tr>
+	<td class="name" nowrap><a href="#Events">Events</a></td>
+	<td class="summary">Events generated from the xPLGirder component (in addition to standard component events) </td>
+	</tr>
+
+	<tr>
+	<td class="name" nowrap><a href="#message">message</a></td>
+	<td class="summary">xPL message table.</td>
+	</tr>
+
+	<tr>
+	<td class="name" nowrap><a href="#properties">properties</a></td>
+	<td class="summary">properties of global xPLGirder table.</td>
+	</tr>
+
+</table>
+
+
+
+<br/>
+<br/>
+
+
+
+
+<h2><a name="functions"></a>Functions</h2>
+<dl class="function">
+
+
+
+<dt><a name="xPLGirder.SendDiscovery"></a><strong>xPLGirder.SendDiscovery</strong>&nbsp;(self)</dt>
+<dd>
+Sends a heartbeat request for all other devices on the network to announce themselves by sending a heartbeat on to the network. This will be done automatically at startup.
+
+
+<h3>Parameters:</h3>
+<ul>
+	
+	<li>
+	  <code><em>self</em></code>: 
+	</li>
+	
+</ul>
+
+
+
+
+<h3>Usage:</h3>
+<ul><pre class=example>xPLGirder:SendDiscovery()</pre></ul>
+
+
+
+
+
+</dd>
+
+
+
+
+<dt><a name="xPLGirder.SendHeartbeat"></a><strong>xPLGirder.SendHeartbeat</strong>&nbsp;(self)</dt>
+<dd>
+Sends a heartbeat on to the network. This will be done automatically and should normally not be called.
+
+
+<h3>Parameters:</h3>
+<ul>
+	
+	<li>
+	  <code><em>self</em></code>: 
+	</li>
+	
+</ul>
+
+
+
+
+<h3>Usage:</h3>
+<ul><pre class=example>xPLGirder:SendHeartbeat()</pre></ul>
+
+
+
+
+
+</dd>
+
+
+
+
+<dt><a name="xPLGirder.SendMessage"></a><strong>xPLGirder.SendMessage</strong>&nbsp;(self, msg)</dt>
+<dd>
+Sends an xPL message on the network. The string value provided must be a valid xPL message, but it will not be checked for correctness!
+
+
+<h3>Parameters:</h3>
+<ul>
+	
+	<li>
+	  <code><em>self</em></code>: 
+	</li>
+	
+	<li>
+	  <code><em>msg</em></code>: a string containing the xPL message to send
+	</li>
+	
+</ul>
+
+
+
+
+<h3>Usage:</h3>
+<ul><pre class=example>-- create a heartbeat request message<br/>local msg = "xpl-cmnd\n{\nhop=1\nsource=tieske-device.girderid\ntarget=*\n}\nhbeat.request\n{\ncommand=request\n}\n"<br/>-- now send it<br/>xPLGirder:SendMessage(msg)</pre></ul>
+
+
+
+
+
+</dd>
+
+
+</dl>
+
+
+
+
+<h2><a name="tables"></a>Tables</h2>
+<dl class="table">
+
+<dt><a name="Events"></a><strong>Events</strong></dt>
+<dd>Events generated from the xPLGirder component (in addition to standard component events)<br /><br />
+
+
+<h3>Fields:</h3>
+<ul>
+	
+	<li>
+	  <code><em>xPLMessage</em></code>: Whenever an xPL message is received this event is raised. Has a single parameter, the xPL message table.
+	</li>
+	
+	<li>
+	  <code><em>xPLHandlerLoaded</em></code>: Raised after a handler has been loaded, but before it has been initialized. Has a single parameter, the handler table.
+	</li>
+	
+	<li>
+	  <code><em>xPLHandlerInitialized</em></code>: Raised after a handler has been initialized. Has a single parameter, the handler table.
+	</li>
+	
+	<li>
+	  <code><em>xPLHandlerShutDown</em></code>: Raised after a handler has been shut down. Has a single parameter, the handler table.
+	</li>
+	
+	<li>
+	  <code><em>xPLDeviceArrived</em></code>: Raised when a heartbeat is received from a currently unknown xPL device. Has a single parameter, the xPL address of the device.
+	</li>
+	
+	<li>
+	  <code><em>xPLDeviceLeft</em></code>: Raised after an xPL device left the network. Either by sending an 'end' message or when the next expected heartbeat times out. Has a single parameter, the xPL address of the device.
+	</li>
+	
+	<li>
+	  <code><em>Status</em></code>: The existing <code>Status</code> event has been extended with the following values; <ul><li><code>Startup</code> xPLGirder is trying to connect to the xPL network</li> <li><code>Online</code> xPLGirder has established a connection to the xPL network</li> <li><code>Offline</code> xPLGirder went offline</li></ul>
+	</li>
+	
+</ul>
+
+
+</dd>
+
+
+<dt><a name="message"></a><strong>message</strong></dt>
+<dd>xPL message table. Each received message is represented in a table with this structure.<br /><br />
+
+
+<h3>Fields:</h3>
+<ul>
+	
+	<li>
+	  <code><em>type</em></code>: the message type, either one of <code>'xpl-cmnd', 'xpl-trig',</code> or <code>'xpl-stat'</code>.
+	</li>
+	
+	<li>
+	  <code><em>hop</em></code>: message hop-count
+	</li>
+	
+	<li>
+	  <code><em>source</em></code>: source address
+	</li>
+	
+	<li>
+	  <code><em>target</em></code>: target address
+	</li>
+	
+	<li>
+	  <code><em>schema</em></code>: message schema
+	</li>
+	
+	<li>
+	  <code><em>body</em></code>: a list/array with all the key-value pairs in the message body. Every item in this list is a table with 2 key-value pairs; <code>key</code> and <code>value</code> which each contain the key and value of the key-value pair in that position. So to access the first key use; <code>msg.body[1].key</code> and to access the accompanying value use <code>msg.body[1].value</code>.
+	</li>
+	
+</ul>
+
+
+</dd>
+
+
+<dt><a name="properties"></a><strong>properties</strong></dt>
+<dd>properties of global xPLGirder table. These are accessible through the global <code>xPLGirder</code>.<br /><br />
+
+
+<h3>Fields:</h3>
+<ul>
+	
+	<li>
+	  <code><em>Address</em></code>: the xPL address in use by Girder (automatically generated based upon the current systems hostname)
+	</li>
+	
+	<li>
+	  <code><em>Port</em></code>: the current UDP port in use (listening on for incoming xPL messages)
+	</li>
+	
+	<li>
+	  <code><em>ID</em></code>: Girder plugin ID for xPLGirder
+	</li>
+	
+	<li>
+	  <code><em>Name</em></code>: Girder component name for xPL Girder
+	</li>
+	
+	<li>
+	  <code><em>Description</em></code>: Girder component description for xPLGirder
+	</li>
+	
+	<li>
+	  <code><em>Version</em></code>: Component version number
+	</li>
+	
+	<li>
+	  <code><em>Devices</em></code>: table with xPL devices found on the xPL network
+	</li>
+	
+</ul>
+
+
+</dd>
+
+
+</dl>
+
+
+
+
+</div> <!-- id="content" -->
+
+</div> <!-- id="main" -->
+
+<div id="about">
+	<p><a href="http://validator.w3.org/check?uri=referer"><img src="http://www.w3.org/Icons/valid-xhtml10" alt="Valid XHTML 1.0!" height="31" width="88" /></a></p>
+</div> <!-- id="about" -->
+
+</div> <!-- id="container" -->	
+</body>
+</html>

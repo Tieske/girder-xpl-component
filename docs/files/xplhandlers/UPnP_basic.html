@@ -1,0 +1,290 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+<head>
+    <title>Reference</title>
+    <link rel="stylesheet" href="../../luadoc.css" type="text/css" />
+	<!--meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/-->
+</head>
+
+<body>
+<div id="container">
+
+<div id="product">
+	<div id="product_logo"></div>
+	<div id="product_name"><big><b></b></big></div>
+	<div id="product_description"></div>
+</div> <!-- id="product" -->
+
+<div id="main">
+
+<div id="navigation">
+
+
+<h1>LuaDoc</h1>
+<ul>
+	
+	<li><a href="../../index.html">Index</a></li>
+	
+</ul>
+
+
+<!-- Module list -->
+
+<h1>Modules</h1>
+<ul>
+
+	<li>
+		<a href="../../modules/xPLGirder.html">xPLGirder</a>
+	</li>
+
+</ul>
+
+
+
+<!-- File list -->
+
+<h1>Files</h1>
+<ul>
+
+	<li>
+		<a href="../../files/../plugins/treescript/xplgirder.html">../plugins/treescript/xplgirder.lua</a>
+	</li>
+
+	<li>
+		<a href="../../files/components/xPLGirder.html">components/xPLGirder.lua</a>
+	</li>
+
+	<li>
+		<a href="../../files/xplhandlers/Block_hbeat_and_config.html">xplhandlers/Block_hbeat_and_config.lua</a>
+	</li>
+
+	<li>
+		<a href="../../files/xplhandlers/RFXLAN remote.basic.html">xplhandlers/RFXLAN remote.basic.lua</a>
+	</li>
+
+	<li><strong>xplhandlers/UPnP_basic.lua</strong></li>
+	
+	<li>
+		<a href="../../files/xplhandlers/ac_basic.html">xplhandlers/ac_basic.lua</a>
+	</li>
+
+	<li>
+		<a href="../../files/xplhandlers/fragment_basic.html">xplhandlers/fragment_basic.lua</a>
+	</li>
+
+	<li>
+		<a href="../../files/xplhandlers/girder_basic.html">xplhandlers/girder_basic.lua</a>
+	</li>
+
+	<li>
+		<a href="../../files/xplhandlers/log_basic.html">xplhandlers/log_basic.lua</a>
+	</li>
+
+	<li>
+		<a href="../../files/xplhandlers/sensor_basic.html">xplhandlers/sensor_basic.lua</a>
+	</li>
+
+	<li>
+		<a href="../../files/xplhandlers/x10_basic.html">xplhandlers/x10_basic.lua</a>
+	</li>
+
+	<li>
+		<a href="../../files/xplhandlers/xPLHandler_template.html">xplhandlers/xPLHandler_template.lua</a>
+	</li>
+
+</ul>
+
+
+
+
+
+
+</div> <!-- id="navigation" -->
+
+<div id="content">
+
+<h1>File <code>xplhandlers/UPnP_basic.lua</code></h1>
+
+
+<p>xPLGirder is a Girder component to connect Girder to an xPL network.<br/>&nbsp<br/>This handler works with the <a href="http://www.thijsschreijer.nl/blog/?tag=upnp">UPnP-2-xPL gateway</a>, the gateway must be installed to make the handler work (not necessarily on the same system, but within the same network/subnet). The handler will enable Girder to receive value updates from, and to execute methods on UPnP devices. It is highly recommended to read the UPnP Device Architecture 1.1 (see <a href="http://www.upnp.org">www.upnp.org</a>) specifically section 2.3 onwards. And to install the <a href="http://opentools.homeip.net/dev-tools-for-upnp">Developer tools for UPnP</a>, which is an essential set of tools and utilities for UPnP development.<br/>&nbsp<br/>The handler will create a global table <code>UPnP</code>. This table has two important sub-tables; <ul><li><code>UPnP.devices</code> which contains a hierarchical tree of UPnP devices and their underlying components (services, subdevices, etc.)</li> <li><code>UPnP.IDlist</code> this list contains all elements of the hierarchical tree by their ID</li></ul><br/>&nbspAn important note to the hierarchical tree is that the <code>key</code>s of the devices and services are their unique names, but adapted for proper display in Girder. The Girder variable inspector will not properly display keys that contain either '.' (dot) or ':' (colon) characters, hence they will be replaced by '_' (underscore). So it cannot be assumed that the key is equal to the device/service unique name. <br/>The UPnP elements that will be listed are;<ul> <li>devices</li> <li>services</li> <li>statevariables</li> <li>methods</li> <li>arguments</li> </ul>Each element has its own ID and has a property <code>parent</code> that contains the ID of the parent element. Each parent has a property <code>IDlist</code> with a list of child IDs. <strong>Note:</strong> the IDs are NOT persistent! When Girder exits or the UPnP device leaves, the ID will be lost. To identify the same device over multiple sessions you should use the unique names of devices and services (see code examples below).<br/>&nbspEach value update reported by a UPnP device as well as UPnP devices arriving/leaving will result in a Girder event. The variable updates only arrive if the statevariable is 'evented'. Unevented values may be requested using the <code>poll</code> method. UPnP methods can be executed using the <code>execute</code> method.<br/>&nbsp<br/>For a tutorial on using UPnP from Girder see <a href="http://www.thijsschreijer.nl/blog/?p=569">this blog post</a>.<br/>&nbsp<br/>xPLGirder is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version. xPLGirder is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details. You should have received a copy of the GNU General Public License along with xPLGirder.  If not, see <a href="http://www.gnu.org/licenses/">http://www.gnu.org/licenses/</a>. <br/><br/>&nbspSee the accompanying ReadMe.txt file for additional information.</p>
+
+
+
+<p>Copyright &copy;2011-2012 Richard A Fox Jr., Thijs Schreijer</p>
+
+
+<p><small><b>Release:</b> Version 0.1.6, xPLGirder.</small></p>
+
+
+
+<h2>Functions</h2>
+<table class="function_list">
+
+	<tr>
+	<td class="name" nowrap><a href="#UPnP.CallMethod">UPnP.CallMethod</a>&nbsp;(self, methodid, ...)</td>
+	<td class="summary">Calls a UPnP method.</td>
+	</tr>
+
+	<tr>
+	<td class="name" nowrap><a href="#UPnP.PollValue">UPnP.PollValue</a>&nbsp;(self, id)</td>
+	<td class="summary">Requests current value of a device, service or variable.</td>
+	</tr>
+
+</table>
+
+
+
+
+<h2>Tables</h2>
+<table class="table_list">
+
+	<tr>
+	<td class="name" nowrap><a href="#UPnP events">UPnP events</a></td>
+	<td class="summary">Girder events generated by the UPnP handler.</td>
+	</tr>
+
+</table>
+
+
+
+<br/>
+<br/>
+
+
+
+
+<h2><a name="functions"></a>Functions</h2>
+<dl class="function">
+
+
+
+<dt><a name="UPnP.CallMethod"></a><strong>UPnP.CallMethod</strong>&nbsp;(self, methodid, ...)</dt>
+<dd>
+Calls a UPnP method. The call is synchroneous and will (wait for) and return the results (eventhough the communications are asynchroneous, both xPL and UPnP). There is a fixed timeout of 20 seconds if the UPnP device does not respond.<br/>There are 2 ways to call a method; 1) directly on the method table, 2) indirectly using a generic call. See the example below for the difference, the results will be identical.
+
+
+<h3>Parameters:</h3>
+<ul>
+	
+	<li>
+	  <code><em>self</em></code>: 
+	</li>
+	
+	<li>
+	  <code><em>methodid</em></code>: The ID of the method to execute
+	</li>
+	
+	<li>
+	  <code><em>...</em></code>: parameters for the method, all parameters MUST be provided for the call to succeed
+	</li>
+	
+</ul>
+
+
+
+
+<h3>Usage:</h3>
+<ul><pre class=example>-- The ID's below are fixed, and will not change over time (but might after firmware update)<br/>local RecivaUUID = "c29e7602-328f-444d-911c-7cdc8bc74768"<br/>local RadioServiceID = "urn_reciva-com_serviceId_RecivaRadio"<br/>-- Get method "GetPlaybackDetails" from the device/service<br/>local m = UPnP.devices[RecivaUUID].services[RadioServiceID].methods["GetPlaybackDetails"]<br/>&nbsp<br/>-- method1: call directly on method table (must provide each argument, even though not used!)<br/>local success, result = m:execute("", "")<br/>&nbsp<br/>-- method2: call indirectly using generic call (must provide each argument, even though not used!)<br/>local success, result = UPnP:CallMethod(m.ID, "", "")	-- m.ID additional argument needed here</pre></ul>
+
+
+
+<h3>Return values:</h3>
+<ol>
+	
+	<li>success (boolean) <code>true</code> if the call was succesfull, if it failed, the second return value will contain the error.</li>
+	
+	<li>additional return values are all the OUT arguments of the method</li>
+	
+</ol>
+
+
+
+</dd>
+
+
+
+
+<dt><a name="UPnP.PollValue"></a><strong>UPnP.PollValue</strong>&nbsp;(self, id)</dt>
+<dd>
+Requests current value of a device, service or variable. In case of a variable only a single value will be requested, in case of a device or service the values off all underlying variables (within nested devices/services) will be requested. The request will be executed asynchroneously, the updates will come in as regular value updates. <br/><strong>Important note</strong>: UPnP does not provide a way to request variable values. The UPnP-2-xPL gateway provides a rudimentary workaround, which quite often won't work. See the gateway documentation for details on what to expect. <br/>There are 2 ways to request a value; 1) directly on the service/device/variable table, 2) indirectly using a generic call. See the example below for the difference, the results will be identical.
+
+
+<h3>Parameters:</h3>
+<ul>
+	
+	<li>
+	  <code><em>self</em></code>: 
+	</li>
+	
+	<li>
+	  <code><em>id</em></code>: The ID of the device, service or variable for which the update is requested.
+	</li>
+	
+</ul>
+
+
+
+
+<h3>Usage:</h3>
+<ul><pre class=example>-- The ID's below are fixed, and will not change over time (but might after firmware update)<br/>local RecivaUUID = "c29e7602-328f-444d-911c-7cdc8bc74768"<br/>local RadioServiceID = "urn_reciva-com_serviceId_RecivaRadio"<br/>-- Get the service from the device table, the request on a service will return all variables within it<br/>local s = UPnP.devices[RecivaUUID].services[RadioServiceID]<br/>&nbsp<br/>-- method1: call directly on service/device/variable table<br/>s:poll()<br/>&nbsp<br/>-- method2: call indirectly using generic call<br/>UPnP:PollValue(s.ID)	-- s.ID additional argument needed here</pre></ul>
+
+
+
+<h3>Return value:</h3>
+<ul>Nothing</ul>
+
+
+
+</dd>
+
+
+</dl>
+
+
+
+
+<h2><a name="tables"></a>Tables</h2>
+<dl class="table">
+
+<dt><a name="UPnP events"></a><strong>UPnP events</strong></dt>
+<dd>Girder events generated by the UPnP handler. All events will have "xPLGirder" as the event source.<br /><br />
+
+
+<h3>Fields:</h3>
+<ul>
+	
+	<li>
+	  <code><em>arriving</em></code>: Whenever a new UPnP device arrives the following event is raised. Note that 3 seconds after the event automatically a variable update request will be sent.<ul> <li><code>eventstring</code>: "UPnP device arrived; &ltdevice name&gt"</li> <li><code>pld1</code>: device ID assigned to the device</li> <li><code>pld2</code>: nil</li> <li><code>pld3</code>: nil</li> <li><code>pld3</code>: nil</li> </ul>
+	</li>
+	
+	<li>
+	  <code><em>leaving</em></code>: Whenever a UPnP device leaves the following event is raised. Note that the device has already been removed from the list when the event is raised.<ul> <li><code>eventstring</code>: "UPnP device left; &ltdevice name&gt"</li> <li><code>pld1</code>: device ID assigned to the device</li> <li><code>pld2</code>: nil</li> <li><code>pld3</code>: nil</li> <li><code>pld3</code>: nil</li> </ul>
+	</li>
+	
+	<li>
+	  <code><em>updates</em></code>: Whenever an update of a UPnP variable arrives (automatically for evented variables or upon request for non-evented variables) the following event is raised.<ul> <li><code>eventstring</code>: "UPnP value update &ltdevice name&gt:&ltvariable name&gt"</li> <li><code>pld1</code>: ID of the variable that changed</li> <li><code>pld2</code>: new value of the variable</li> <li><code>pld3</code>: old value of the variable</li> <li><code>pld3</code>: nil</li> </ul>
+	</li>
+	
+</ul>
+
+
+</dd>
+
+
+</dl>
+
+
+
+
+</div> <!-- id="content" -->
+
+</div> <!-- id="main" -->
+
+<div id="about">
+	<p><a href="http://validator.w3.org/check?uri=referer"><img src="http://www.w3.org/Icons/valid-xhtml10" alt="Valid XHTML 1.0!" height="31" width="88" /></a></p>
+</div> <!-- id="about" -->
+
+</div> <!-- id="container" -->	
+</body>
+</html>
