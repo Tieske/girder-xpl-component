@@ -1,7 +1,7 @@
 @echo off
 echo off
 
-rem   This file contains environment variables use by the 
+rem   This file contains environment variables used by the 
 rem   batch files.
 
 
@@ -11,10 +11,11 @@ rem the main girder directory
 set girder=C:\Program Files\Promixis\Girder5
 
 rem documentation directory within girder directory
-set girderdoc=docs
+set girderdoc=manual
 
 rem editor for lua files
-set girdereditor=C:\Program Files\JGsoft\EditPadPro6\EditPadPro.exe
+rem set girdereditor=C:\Program Files\JGsoft\EditPadPro6\EditPadPro.exe
+set girdereditor=C:\Program Files\Lua\5.1\scite\scite.exe
 
 rem editor for GUI files
 set girderuieditor=%girder%\designer.exe

@@ -3,7 +3,7 @@
 -- <br/><br/>
 -- This file is part of xPLGirder and provides 2 actions in the Girder interface action tree
 -- <ul><li>send a specific xPL message</li>
--- <li>send an automatic event message, where the xPL message is being generated based on the 
+-- <li>send an automatic event message, where the xPL message is being generated based on the
 -- Girder event that triggered it (see structure below)</li></ul>
 -- Please not that these actions do not work (or might even generate errors) if the xPLGirder
 -- component has not been enabled.
@@ -303,4 +303,4 @@ local Config = Super:New ( {
 } )
 
 
-return "xPLGirder.xml"
+return "xPL_actions.xml"
