@@ -37,8 +37,6 @@ echo.
 echo Now removing older version Handlers directory...
 rd /S/Q "%girder%\luascript\xPLHandlers"
 
-pause
-
 rem create empty directories and copy files
 echo.
 echo Now creating documentation directory...
@@ -52,8 +50,6 @@ md "%girder%\luascript\components\xpl\Handlers"
 echo.
 echo Now creating Support directory...
 md "%girder%\luascript\components\xpl\Support"
-
-pause
 
 echo.
 echo Now copying documentation...

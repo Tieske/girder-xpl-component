@@ -3,7 +3,7 @@
 <html>
 <head>
     <title>Reference</title>
-    <link rel="stylesheet" href="../../luadoc.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../luadoc.css" type="text/css" />
 	<!--meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/-->
 </head>
 
@@ -24,7 +24,7 @@
 <h1>LuaDoc</h1>
 <ul>
 	
-	<li><a href="../../index.html">Index</a></li>
+	<li><a href="../../../../index.html">Index</a></li>
 	
 </ul>
 
@@ -35,7 +35,7 @@
 <ul>
 
 	<li>
-		<a href="../../modules/xPLGirder.html">xPLGirder</a>
+		<a href="../../../../modules/xPLGirder.html">xPLGirder</a>
 	</li>
 
 </ul>
@@ -48,49 +48,29 @@
 <ul>
 
 	<li>
-		<a href="../../files/../plugins/treescript/xplgirder.html">../plugins/treescript/xplgirder.lua</a>
+		<a href="../../../../files/../plugins/treescript/xpl_actions.html">../plugins/treescript/xpl_actions.lua</a>
 	</li>
 
 	<li>
-		<a href="../../files/components/xPLGirder.html">components/xPLGirder.lua</a>
+		<a href="../../../../files/components/xPL.html">components/xPL.lua</a>
 	</li>
 
 	<li>
-		<a href="../../files/xplhandlers/Block_hbeat_and_config.html">xplhandlers/Block_hbeat_and_config.lua</a>
+		<a href="../../../../files/components/xPL/Base Handler.html">components/xPL/Base Handler.lua</a>
 	</li>
 
-	<li>
-		<a href="../../files/xplhandlers/RFXLAN remote.basic.html">xplhandlers/RFXLAN remote.basic.lua</a>
-	</li>
-
-	<li><strong>xplhandlers/UPnP_basic.lua</strong></li>
+	<li><strong>components/xPL/Handlers/UPnP.lua</strong></li>
 	
 	<li>
-		<a href="../../files/xplhandlers/ac_basic.html">xplhandlers/ac_basic.lua</a>
+		<a href="../../../../files/components/xPL/Support/CleanupIP.html">components/xPL/Support/CleanupIP.lua</a>
 	</li>
 
 	<li>
-		<a href="../../files/xplhandlers/fragment_basic.html">xplhandlers/fragment_basic.lua</a>
+		<a href="../../../../files/components/xPL/Support/GetRegKey.html">components/xPL/Support/GetRegKey.lua</a>
 	</li>
 
 	<li>
-		<a href="../../files/xplhandlers/girder_basic.html">xplhandlers/girder_basic.lua</a>
-	</li>
-
-	<li>
-		<a href="../../files/xplhandlers/log_basic.html">xplhandlers/log_basic.lua</a>
-	</li>
-
-	<li>
-		<a href="../../files/xplhandlers/sensor_basic.html">xplhandlers/sensor_basic.lua</a>
-	</li>
-
-	<li>
-		<a href="../../files/xplhandlers/x10_basic.html">xplhandlers/x10_basic.lua</a>
-	</li>
-
-	<li>
-		<a href="../../files/xplhandlers/xPLHandler_template.html">xplhandlers/xPLHandler_template.lua</a>
+		<a href="../../../../files/components/xPL/Support/xPLParser.html">components/xPL/Support/xPLParser.lua</a>
 	</li>
 
 </ul>
@@ -104,17 +84,11 @@
 
 <div id="content">
 
-<h1>File <code>xplhandlers/UPnP_basic.lua</code></h1>
-
-
-<p>xPLGirder is a Girder component to connect Girder to an xPL network.<br/>&nbsp<br/>This handler works with the <a href="http://www.thijsschreijer.nl/blog/?tag=upnp">UPnP-2-xPL gateway</a>, the gateway must be installed to make the handler work (not necessarily on the same system, but within the same network/subnet). The handler will enable Girder to receive value updates from, and to execute methods on UPnP devices. It is highly recommended to read the UPnP Device Architecture 1.1 (see <a href="http://www.upnp.org">www.upnp.org</a>) specifically section 2.3 onwards. And to install the <a href="http://opentools.homeip.net/dev-tools-for-upnp">Developer tools for UPnP</a>, which is an essential set of tools and utilities for UPnP development.<br/>&nbsp<br/>The handler will create a global table <code>UPnP</code>. This table has two important sub-tables; <ul><li><code>UPnP.devices</code> which contains a hierarchical tree of UPnP devices and their underlying components (services, subdevices, etc.)</li> <li><code>UPnP.IDlist</code> this list contains all elements of the hierarchical tree by their ID</li></ul><br/>&nbspAn important note to the hierarchical tree is that the <code>key</code>s of the devices and services are their unique names, but adapted for proper display in Girder. The Girder variable inspector will not properly display keys that contain either '.' (dot) or ':' (colon) characters, hence they will be replaced by '_' (underscore). So it cannot be assumed that the key is equal to the device/service unique name. <br/>The UPnP elements that will be listed are;<ul> <li>devices</li> <li>services</li> <li>statevariables</li> <li>methods</li> <li>arguments</li> </ul>Each element has its own ID and has a property <code>parent</code> that contains the ID of the parent element. Each parent has a property <code>IDlist</code> with a list of child IDs. <strong>Note:</strong> the IDs are NOT persistent! When Girder exits or the UPnP device leaves, the ID will be lost. To identify the same device over multiple sessions you should use the unique names of devices and services (see code examples below).<br/>&nbspEach value update reported by a UPnP device as well as UPnP devices arriving/leaving will result in a Girder event. The variable updates only arrive if the statevariable is 'evented'. Unevented values may be requested using the <code>poll</code> method. UPnP methods can be executed using the <code>execute</code> method.<br/>&nbsp<br/>For a tutorial on using UPnP from Girder see <a href="http://www.thijsschreijer.nl/blog/?p=569">this blog post</a>.<br/>&nbsp<br/>xPLGirder is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version. xPLGirder is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details. You should have received a copy of the GNU General Public License along with xPLGirder.  If not, see <a href="http://www.gnu.org/licenses/">http://www.gnu.org/licenses/</a>. <br/><br/>&nbspSee the accompanying ReadMe.txt file for additional information.</p>
+<h1>File <code>components/xPL/Handlers/UPnP.lua</code></h1>
 
 
 
-<p>Copyright &copy;2011-2012 Richard A Fox Jr., Thijs Schreijer</p>
 
-
-<p><small><b>Release:</b> Version 0.1.6, xPLGirder.</small></p>
 
 
 
@@ -248,7 +222,7 @@ Requests current value of a device, service or variable. In case of a variable o
 <dl class="table">
 
 <dt><a name="UPnP events"></a><strong>UPnP events</strong></dt>
-<dd>Girder events generated by the UPnP handler. All events will have "xPLGirder" as the event source.<br /><br />
+<dd>Girder events generated by the UPnP handler. All events will have "xPL" as the event source.<br /><br />
 
 
 <h3>Fields:</h3>

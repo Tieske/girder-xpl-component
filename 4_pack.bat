@@ -4,7 +4,7 @@ echo off
 echo ============================================================
 echo   Packing and zipping xPLGirder plugin
 echo.
-echo   This will first call the pack & generate docs script
+echo   This will first call the pack and generate docs script
 echo   and then create a zip file with the package.
 echo.
 echo ============================================================

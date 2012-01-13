@@ -48,49 +48,29 @@
 <ul>
 
 	<li>
-		<a href="../../files/../plugins/treescript/xplgirder.html">../plugins/treescript/xplgirder.lua</a>
+		<a href="../../files/../plugins/treescript/xpl_actions.html">../plugins/treescript/xpl_actions.lua</a>
 	</li>
 
-	<li><strong>components/xPLGirder.lua</strong></li>
+	<li><strong>components/xPL.lua</strong></li>
 	
 	<li>
-		<a href="../../files/xplhandlers/Block_hbeat_and_config.html">xplhandlers/Block_hbeat_and_config.lua</a>
+		<a href="../../files/components/xPL/Base Handler.html">components/xPL/Base Handler.lua</a>
 	</li>
 
 	<li>
-		<a href="../../files/xplhandlers/RFXLAN remote.basic.html">xplhandlers/RFXLAN remote.basic.lua</a>
+		<a href="../../files/components/xPL/Handlers/UPnP.html">components/xPL/Handlers/UPnP.lua</a>
 	</li>
 
 	<li>
-		<a href="../../files/xplhandlers/UPnP_basic.html">xplhandlers/UPnP_basic.lua</a>
+		<a href="../../files/components/xPL/Support/CleanupIP.html">components/xPL/Support/CleanupIP.lua</a>
 	</li>
 
 	<li>
-		<a href="../../files/xplhandlers/ac_basic.html">xplhandlers/ac_basic.lua</a>
+		<a href="../../files/components/xPL/Support/GetRegKey.html">components/xPL/Support/GetRegKey.lua</a>
 	</li>
 
 	<li>
-		<a href="../../files/xplhandlers/fragment_basic.html">xplhandlers/fragment_basic.lua</a>
-	</li>
-
-	<li>
-		<a href="../../files/xplhandlers/girder_basic.html">xplhandlers/girder_basic.lua</a>
-	</li>
-
-	<li>
-		<a href="../../files/xplhandlers/log_basic.html">xplhandlers/log_basic.lua</a>
-	</li>
-
-	<li>
-		<a href="../../files/xplhandlers/sensor_basic.html">xplhandlers/sensor_basic.lua</a>
-	</li>
-
-	<li>
-		<a href="../../files/xplhandlers/x10_basic.html">xplhandlers/x10_basic.lua</a>
-	</li>
-
-	<li>
-		<a href="../../files/xplhandlers/xPLHandler_template.html">xplhandlers/xPLHandler_template.lua</a>
+		<a href="../../files/components/xPL/Support/xPLParser.html">components/xPL/Support/xPLParser.lua</a>
 	</li>
 
 </ul>
@@ -104,17 +84,17 @@
 
 <div id="content">
 
-<h1>File <code>components/xPLGirder.lua</code></h1>
+<h1>File <code>components/xPL.lua</code></h1>
 
 
-<p>xPLGirder is a Girder component to connect Girder to an xPL network. <a href="http://xplproject.org.uk">xPL is an open source home automation protocol</a> that uses simple text based messages to communicate and provides automatic discovery of devices on the network. <br/><br/>&nbspAfter the component has been enabled within Girder and <a href="http://www.thijsschreijer.nl/blog/?page_id=150">the xPL infrastructure has been setup</a>, Girder will automatically connect to the xPL network. xPL uses <a href="http://xplproject.org.uk/wiki/index.php?title=XPL_Message_Schema">message schemas</a> to identify and specify message contents. For several message schemas handler files have been provided and also a template is available to create your own (this requires lua coding). If the installed handlers do not prevent it (see below), a Girder event will be created for received messages. The event source will be xPLGirder, the event string will have the format of an xPL filter and the event payloads will be; <ol><li>the xPL message 'pickled'</li> <li>nil</li> <li>nil</li> <li>nil</li></ol> <br/>To access the message, just unpickle the payload value; <code>local msg = unpickle(pld1)</code>. Additional events will be created for xPL devices arriving, leaving and the xPL connection status. <br/><br/>The generated events depend upon the message handlers. Whenever a message is received it will be handed to every handler in turn. Each handler will only be called if the message matches the filter list of that handler. If a handler handles a message, if may raise a specific event for that message. The return values of the handlers determine if there will be a generic event. If at least one handler returns <code>true</code> after handling the message then the generic xPLGirder event for received messages will be suppressed. Only if none of the handlers returns <code>true</code> the generic event will be raised. <br/><br/>xPLGirder installs in a global table <code>xPLGirder</code>, but that global is only available after the component has been started. Several functions can be used through this global table. <br/><br/>&nbspxPLGirder is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version. xPLGirder is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details. You should have received a copy of the GNU General Public License along with xPLGirder.  If not, see <a href="http://www.gnu.org/licenses/">http://www.gnu.org/licenses/</a>. <br/><br/>&nbspSee the accompanying ReadMe.txt file for additional information.</p>
+<p>xPLGirder is a Girder component to connect Girder to an xPL network. <a href="http://xplproject.org.uk">xPL is an open source home automation protocol</a> that uses simple text based messages to communicate and provides automatic discovery of devices on the network. <br/><br/>&nbspAfter the component has been enabled within Girder and <a href="http://www.thijsschreijer.nl/blog/?page_id=150">the xPL infrastructure has been setup</a>, Girder will automatically connect to the xPL network. xPL uses <a href="http://xplproject.org.uk/wiki/index.php?title=XPL_Message_Schema">message schemas</a> to identify and specify message contents. For several message schemas handler files have been provided and also a template is available to create your own (this requires lua coding). If the installed handlers do not prevent it (see below), a Girder event will be created for received messages. The event source will be xPLGirder, the event string will have the format of an xPL filter and the event payloads will be; <ol><li>the xPL message 'pickled'</li> <li>nil</li> <li>nil</li> <li>nil</li></ol> <br/>To access the message, just unpickle the payload value; <code>local msg = unpickle(pld1)</code>. Additional events will be created for xPL devices arriving, leaving and the xPL connection status. <br/><br/>The generated events depend upon the message handlers. Whenever a message is received it will be handed to every handler in turn. Each handler will only be called if the message matches the filter list of that handler. If a handler handles a message, if may raise a specific event for that message. The return values of the handlers determine if there will be a generic event. If at least one handler returns <code>true</code> after handling the message then the generic xPLGirder event for received messages will be suppressed. Only if none of the handlers returns <code>true</code> the generic event will be raised. <br/><br/>xPLGirder installs in a global table <code>xPLGirder</code>, but that global is only available after the component has been started. Several functions can be used through this global table. <br/><br/></p>
 
 
 
 <p>Copyright &copy;2011-2012 Richard A Fox Jr., Thijs Schreijer</p>
 
 
-<p><small><b>Release:</b> Version 0.1.6, xPLGirder.</small></p>
+<p><small><b>Release:</b> Version 0.1.6, xPLGirder. <br/><br/></small></p>
 
 
 
