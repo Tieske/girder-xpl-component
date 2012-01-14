@@ -47,6 +47,27 @@ local Events = table.makeset ( {
     'DeviceVariable',
 } )
 
+local typetable = {         -- everything not in the table is considered string
+    boolean = "boolean",
+    ui1 = "number",
+    ui2 = "number",
+    ui4 = "number",
+    i1 = "number",
+    i2 = "number",
+    i4 = "number",
+    int = "number",
+    r4 = "number",
+    r8 = "number",
+    number = "number",
+    ['fixed.14.4'] = "number",
+    float = "number",
+    date = "date",
+    dateTime = "date",
+    ['dateTime.tz'] = "date",
+    time = "date",
+    ['time.tz'] = "date",
+}
+
 
 local Super = require 'Components.xPL.Base Handler'
 
@@ -57,25 +78,25 @@ local myNewHandler = Super:New ( {
 	Name = "UPnP",		-- enter a unique string to identify this handler
 
     Description = 'UPnP from xPL interface',
-    
+
     ConfigFile = 'UPnP',
-    
-    Version = '0.0.1',    
-    
+
+    Version = '0.0.1',
+
 	AnnFragments = {},		-- private list (by their ID) of announcements received, but not yet complete ((sub-)children or parent are missing)
-    
+
 	IDlist = {},			-- public list (UPnP.IDlist) of all elements by their ID, elements will be added once they are complete
                             -- even if their parent might not yet be complete.
 	DevList = {}, 			-- public list (UPnP.devices) of all completed root devices by their UDN. Devices will be added once a
                             -- root-device is complete
 	CallID = 0,				-- a unique call ID for method calls
-    
+
 	ResponseQueue = {},		-- ID's of methods calls waiting for a response
-    
+
 	AnnouncementTimer = nil, -- timer that will be set after each received fragment, to check for completeness
-    
+
 	LastFragmentReceived = nil, -- date/time when the last fragment was received during an announcement
-    
+
 	Filters = {
 		"*.*.*.*.upnp.basic",
 		"*.*.*.*.upnp.announce",
@@ -86,7 +107,7 @@ local myNewHandler = Super:New ( {
 
     Initialize = function (self)
          self:AddEvents (Events)
-         
+
         return Super.Initialize (self)
     end,
 
@@ -169,22 +190,22 @@ local myNewHandler = Super:New ( {
 
 		-- send announce request, but wait until xPL is fully initialized
 		local ded = Classes.DelayedExecutionDispatcher:New (3000, function () self:RequestAnnounce() end)
-        
+
 		-- set announcementcheck
 		self:CreateAnnouncementTimer()
 		self.AnnouncementTimer:Arm(3000 + announcementtimeout)
-        
+
         return Super.Enable (self)
 	end,
 
 
     Disable = function (self)
 		self:DestroyAnnouncementTimer()
-        
+
 		for k,v in pairs(self.DevList) do
 			self:DeleteRootDevice(v)
 		end
-        
+
 		UPnP = nil 	-- destroy global variable
 
         local b = Super.Disable (self)
@@ -256,7 +277,7 @@ local myNewHandler = Super:New ( {
 		return result
 	end,
 
-    
+
 	RemoveDevice = function (self, msg)
 		-- received a message that something is leaving, either UPnP or xPL device, do cleanup
 		if msg.schema == "upnp.announce" and msg.type == "xpl-trig" and self:GetMessageValueByKey(msg, "announce") == "left" then
@@ -270,7 +291,7 @@ local myNewHandler = Super:New ( {
 		end
 	end,
 
-    
+
 	RemoveUPnPDevice = function (self, msg)
 		-- a UPnP device is leaving, go find and delete it
 		local t = self:GetMessageValueByKey(msg, "id")
@@ -285,7 +306,7 @@ local myNewHandler = Super:New ( {
 		end
 	end,
 
-	
+
     RemovexPLDevice = function (self, msg)
 		-- an xPL device is leaving, check if its one of our root devices
 		local del = "not nil"
@@ -304,7 +325,7 @@ local myNewHandler = Super:New ( {
 		end
 	end,
 
-    
+
 	DeleteRootDevice = function (self, dev)
 		-- removes a specific device table from the global tables and raises Girder event
 		self.DevList[dev.deviceid] = nil
@@ -313,7 +334,7 @@ local myNewHandler = Super:New ( {
 		gir.TriggerEvent("UPnP device left; " .. dev.name, self.xPL.ID, dev.deviceid)
 	end,
 
-    
+
 	DeleteElement = function (self, dev)
 		-- removes a specific element table from the global ID list, will call itself recursive
 		-- go delete the child elements
@@ -330,7 +351,7 @@ local myNewHandler = Super:New ( {
         end
 	end,
 
-    
+
 	DeleteOrphan = function (self, elem)
 		-- the ID delivered is an Orphan and the requests for announcement failed, so must
 		-- cleanup this one and any related elements
@@ -369,7 +390,7 @@ local myNewHandler = Super:New ( {
 		end
 	end,
 
-    
+
 	RequestAnnounce = function (self)
 		-- send an broadcast xpl message to announce UPnP devices
 		local req = "xpl-cmnd\n{\nhop=1\nsource=%s\ntarget=*\n}\nupnp.basic\n{\ncommand=announce\n}\n"
@@ -377,7 +398,7 @@ local myNewHandler = Super:New ( {
 		self.xPL:SendMessage(msg)
 	end,
 
-    
+
 	AddAnnouncedFragment = function (self, msg)
 		local part = {}					-- will hold our received part
 		-- create ID list
@@ -476,7 +497,7 @@ local myNewHandler = Super:New ( {
 		self:SetAnnouncementTimer()
 	end,
 
-    
+
 	PartComplete = function (self, pID)
 		-- the mentioned ID is complete and in the completed elements IDlist, attach it to parent
 		-- and check parent completenss
@@ -488,7 +509,7 @@ local myNewHandler = Super:New ( {
 			gir.TriggerEvent("UPnP device arrived; " .. p.name, self.xPL.ID, p.deviceid)
 			-- announcement complete, request the devices variable values, but delayed to prevent flooding the xPL network
 			local ded = Classes.DelayedExecutionDispatcher:New (3000, function () self:RequestVariableValues(pID) end)
-            
+
             self:ProcessNewUPnPDevice (p)
 		else
 			if p.announce == "service" then
@@ -543,7 +564,28 @@ local myNewHandler = Super:New ( {
 		end
 	end,
 
-    
+    ConvertToType = function (self, value, statevar)
+        -- convert the value to the Lua type indicated by statevariable
+        -- see the typetable for conversion types
+        -- value: the string value received
+        -- statevar: the state variable containing the type to return
+        -- returns: the value in the converted format
+        if value and type(statevar == "table") and statevar.type then
+            local vt = typetable[string.lower(statevar.type)]
+            if vt == "boolean" then
+                -- its a bool, go convert
+                value = string.lower(value)
+                value = ( value == "true" or value == "1" or value == "yes" )
+            elseif vt == "number" then
+                -- its a number
+                value = tonumber(value)
+            else
+                -- stick to string, do nothing
+            end
+        end
+        return value
+    end,
+
 	UpdateStateVariable = function (self, msg)
 		for i,kvp in ipairs(msg.body) do
 			local svar = self.IDlist[kvp.key]
@@ -567,7 +609,8 @@ local myNewHandler = Super:New ( {
 			if svar ~= nil then
 				-- found a statevariable
 				local old = svar.value
-				svar.value = v
+                -- convert type of variable
+                svar.value = self:ConvertToType(v, svar)
 				local pservice = self.IDlist[svar.parent]		-- gets the parent service of the statevariable
 				if pservice ~= nil then
 					local pdevice = self.IDlist[pservice.parent]	-- gets the parent device of the service
@@ -631,7 +674,7 @@ local myNewHandler = Super:New ( {
 		return self:WaitForResponse(method.ID, self.CallID - 1)
 	end,
 
-    
+
 	WaitForResponse = function (self, MethodID, CallID)
 		-- waits for a response on a method call, by ID of 'CallID' and returns the returned UPnP parameters
 		CallID = CallID .. "" 	-- force to a string
@@ -697,6 +740,7 @@ local myNewHandler = Super:New ( {
                                 c = c + 1
                             until kv == nil
                         end
+                        response[i] = self:ConvertToType(response[i], self.IDlist[argID].variable)
 						i = i + 1
 					end
 				end
@@ -706,13 +750,13 @@ local myNewHandler = Super:New ( {
 		end
 	end,
 
-    
+
 	AppendCall = function (self, method)
 		-- takes a 'method' table and appends an 'execute' function
 		method.execute = function (method, ...) return self:CallMethod(method, unpack(arg)) end
 		return method
 	end,
-    
+
 
 	RequestVariableValues = function (self, pID)
 		-- Request variable values for this device
@@ -734,14 +778,14 @@ local myNewHandler = Super:New ( {
 			self.xPL:SendMessage(msg)
 		end
 	end,
-    
+
 
 	AppendPoll = function(self, element)
 		-- append a 'poll' method to the element table
 		local id = element.ID
 		element.poll = function () self:RequestVariableValues(id) end
 	end,
-    
+
 
 	-- Timer elements to verify completeness of announcement, and request missing elements if necessary
 	CheckAnnouncement = function(self)
@@ -788,7 +832,7 @@ local myNewHandler = Super:New ( {
 		end
 
 		self:Lock()  --- **** warning, this code in not protected and an error will LOCK UP Girder
-        
+
 		if not table.IsEmpty(self.AnnFragments) then
 			-- so we're not complete, go check the announced fragments list
 
@@ -837,14 +881,14 @@ local myNewHandler = Super:New ( {
 		self:Unlock()
 	end,
 
-    
+
 	CreateAnnouncementTimer = function(self)
 		-- creates the announcement timer at component startup, will NOT arm the timer
 		self:DestroyAnnouncementTimer()
 		self.AnnouncementTimer = gir.CreateTimer(nil, function() self:CheckAnnouncement() end, nil, false)
 	end,
 
-    
+
 	SetAnnouncementTimer = function(self)
 		-- sets the timer to expire in x seconds, and hence go check for announcement completeness
 		if self.AnnouncementTimer then
@@ -853,7 +897,7 @@ local myNewHandler = Super:New ( {
 		end
 	end,
 
-    
+
 	DestroyAnnouncementTimer = function(self)
 		-- destroys the announcement timer at component stop
 		if self.AnnouncementTimer then
@@ -861,46 +905,46 @@ local myNewHandler = Super:New ( {
 			self.AnnouncementTimer = nil
 		end
 	end,
-    
-    
+
+
     ProcessNewUPnPDevice = function (self,pdevice)
         self:Event (self.Events.DeviceArrived,pdevice)--[[
         if pdevice.type == 'urn:schemas-upnp-org:device:MediaRenderer:1' then
             print ('found av renderer', pdevice.name,pdevice.ID)
-            
-            local pservice = pdevice.services ['urn_upnp-org_serviceId_AVTransport'] 
+
+            local pservice = pdevice.services ['urn_upnp-org_serviceId_AVTransport']
             if pservice then
                 print ('found transport service ',pservice.service)
             end
         end]]
     end,
 
-    
+
     ProcessNewUPnPService = function (self,pdevice,pservice)
         --[[if pdevice.type == 'urn:schemas-upnp-org:device:MediaRenderer:1' then
             print ('found av renderer', pdevice.name,pdevice.ID)
-            
-            local pservice = pdevice.services ['urn_upnp-org_serviceId_AVTransport'] 
+
+            local pservice = pdevice.services ['urn_upnp-org_serviceId_AVTransport']
             if pservice then
                 print ('found transport service ',pservice.service)
             end
         end]]
     end,
 
-    
+
     UPnPDeviceVariableUpdate = function (self,pdevice,pservice,svar,old)
         --  [[
         --print ('value update',pdevice.name,pservice.service,svar.name,svar.value or '?', '(',old,')')
         --]]
         self:Event (self.Events.DeviceVariable,pdevice,pservice,svar,old)
     end,
-    
-    
+
+
     GetUPnPDevice = function (self,UUID)
         return UPnP.devices [UUID] or false
     end,
 
-    
+
 } )
 
 
