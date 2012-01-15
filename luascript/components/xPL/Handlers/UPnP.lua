@@ -148,6 +148,42 @@ local myNewHandler = Super:New ( {
 					return method:execute(unpack(arg))
 				end,
 			-----------------------------------------------------------------------------------------
+			-- Calls a UPnP method. The call is asynchroneous and will return the results through a
+            -- callback function. There is a fixed
+			-- timeout of 20 seconds if the UPnP device does not respond.<br/>There are 2 ways to call
+			-- a method; 1) directly on the method table, 2) indirectly using a generic call. See the
+			-- example below for the difference, the results will be identical.
+            -- =================================
+            -- MUST BE UPDATED !!!
+            -- =================================
+			-- @name UPnP.CallMethodAsync
+		    -- @param methodid The ID of the method to execute
+            -- @param callback The callback function to call with the results of the method call
+			-- @param ... parameters for the method, all parameters MUST be provided for the call to succeed
+		    -- @return success (boolean) <code>true</code> if the call was succesfull, if it failed, the
+			-- second return value will contain the error.
+			-- @return additional return values are all the OUT arguments of the method
+			-- @usage# -- The ID's below are fixed, and will not change over time (but might after firmware update)
+			-- local RecivaUUID = "c29e7602-328f-444d-911c-7cdc8bc74768"
+			-- local RadioServiceID = "urn_reciva-com_serviceId_RecivaRadio"
+			-- -- Get method "GetPlaybackDetails" from the device/service
+			-- local m = UPnP.devices[RecivaUUID].services[RadioServiceID].methods["GetPlaybackDetails"]
+			-- &nbsp
+			-- -- method1: call directly on method table (must provide each argument, even though not used!)
+			-- local success, result = m:execute("", "")
+			-- &nbsp
+			-- -- method2: call indirectly using generic call (must provide each argument, even though not used!)
+			-- local success, result = UPnP:CallMethod(m.ID, "", "")	-- m.ID additional argument needed here
+			CallMethodAsync = function (self, methodid, callback, ...)
+					methodid = (methodid or "") .. ""	-- convert to string
+                    assert(callback == nil or type(callback) == "function", "Bad callback provided, expected nil or function, got " .. type(callback))
+					local method = self.IDlist[methodid]
+					if method == nil then
+						error("No (valid) method provided, first argument must be method id, remaining arguments the parameters to the method.", 2)
+					end
+					return method:executeasync(callback, unpack(arg))
+				end,
+			-----------------------------------------------------------------------------------------
 			-- Requests current value of a device, service or variable. In case of a variable only
 			-- a single value will be requested, in case of a device or service the values off all
 			-- underlying variables (within nested devices/services) will be requested. The request
@@ -244,13 +280,7 @@ local myNewHandler = Super:New ( {
 
 		elseif msg.schema == "upnp.method" and msg.type == "xpl-trig" then
 			-- method call results are being delivered
-			local callid = self:GetMessageValueByKey(msg, "callid")
-			if callid ~= nil then
-				if self.ResponseQueue[callid] ~= nil then
-					-- its a response we're waiting for, so go store it
-					self.ResponseQueue[callid] = msg
-				end
-			end
+            self:HandleMethodResult(msg)
 			result = true	-- suppress standard event
 
 		elseif msg.schema == "upnp.announce" and msg.type == "xpl-trig" and self:GetMessageValueByKey(msg, "announce") ~= "left" then
@@ -630,9 +660,60 @@ local myNewHandler = Super:New ( {
 		end
 	end,
 
+    CallMethod = function (self, method, ...)
 
-	CallMethod = function (self, method, ...)
+        local callback = function (CallID, ...)
+            -- this callback will store the results of the call in the ResponseQueue to be picked up
+            self:Lock()
+            local myCall = self.ResponseQueue[CallID]
+            if type(myCall) == "table" then
+                -- store results in queue element
+                myCall.Results = arg
+            else
+                -- unknown callid, or not a table, do nothing
+            end
+            self:Unlock()
+        end
+
+        -- start the async call
+        local CallID = self:CallMethodAsync(method, callback, unpack(arg))
+        local results
+        if CallID then
+            self:Lock()
+            local myCall = self.ResponseQueue[CallID]
+            self:Unlock()
+            -- wait for response
+            local done = false
+            while not done do
+                win.Sleep(100)
+                self:Lock()
+                if type(myCall.Results) == "table" then
+                    -- type changed to a table, so it now contains the results
+                    results = myCall.Results
+                    self.ResponseQueue[CallID] = nil
+                    done = true
+                elseif myCall.TimeOut < date:now() then
+                    -- waiting timed out, so exit
+                    self.ResponseQueue[CallID] = nil	-- cleanup
+                    results = { false, "No response received (time out)" }
+                    done = true
+                end
+                self:Unlock()
+            end
+            -- we're done, return results
+            return unpack(results)
+        end
+    end,
+
+	CallMethodAsync = function (self, method, callback, ...)
 		-- Calls the provided UPnP method using the extra arguments
+        -- method: UPnP method table
+        -- callback: function to call with the results. Arguments will be;
+        --    1) the CallID identifier
+        --    2) boolean, success/failure of the call
+        --    3 and on) results returned by the call or error messages in case of a failure
+        -- returns: a unique CallID, to be returned as the first argument to the callback.
+
 		-- check method
 		if method == nil then
 			error("No method provided, first argument must be method table", 2)
@@ -664,96 +745,95 @@ local myNewHandler = Super:New ( {
 				value = ""
 			else
 				-- function, userdata, thread, and table
-				error("Cannot handle type '" .. t .. "' as input parameter for a UPnP methodcall.")
+				error("Cannot handle type '" .. t .. "' as input parameter for a UPnP methodcall.", 2)
 			end
 			body = body .. string.format("%s=%s\n", v, value)
 		end
 		local msg = string.format(header .. body .. footer, self.xPL.Source, method.xpl, method.ID, self.CallID)
-		self.CallID = self.CallID + 1					-- increase unique ID by 1
 		self.xPL:SendMessage(msg)
-		return self:WaitForResponse(method.ID, self.CallID - 1)
-	end,
-
-
-	WaitForResponse = function (self, MethodID, CallID)
-		-- waits for a response on a method call, by ID of 'CallID' and returns the returned UPnP parameters
-		CallID = CallID .. "" 	-- force to a string
+		self.CallID = self.CallID + 1					-- increase unique ID by 1
+        -- create queueitem to wait for the response
+        local queueItem = {
+            CallID = CallID - 1,
+            MethodID = method.ID,
+            TimeOut = date:now(),
+            CallBack = callback,
+        }
+        queueItem.TimeOut.Second = queueItem.TimeOut.Second + 20
+        -- add to waiting queue
 		self:Lock()
-		self.ResponseQueue[CallID] = CallID		-- post ID we're waiting for
+		self.ResponseQueue[queueItem.CallID] = queueItem
 		self:Unlock()
-		local done = false
-		local msg
-		local waituntil = date:now()
-		waituntil.Second = waituntil.Second + 20	-- timeout after 20 seconds
-		while not done do
-			win.Sleep(100)
-			self:Lock()
-			if type(self.ResponseQueue[CallID]) == "table" then
-				-- type changed to a table, so it now contains the xPL message with the response
-				msg = self.ResponseQueue[CallID]
-				self.ResponseQueue[CallID] = nil
-				done = true
-			elseif waituntil < date:now() then
-				-- waiting timed out, so exit
-				self.ResponseQueue[CallID] = nil	-- cleanup
-				done = true
-			end
-			self:Unlock()
-		end
-		-- we're done
-		if msg == nil then
-			-- timedout
-			return false, "No response received (time out)"
-		else
-			-- deal with the response
-			local success = (string.lower(self:GetMessageValueByKey(msg, "success") or "") == "true")
-			if not success then
-				-- failed call, report error
-				return false, self:GetMessageValueByKey(msg, "error") or "No error message was provided"
-			else
-				-- successfull call, dissect response
-				local response = {}
-				local i = 1
-				-- lookup the method it was a response to
-				local method = self.IDlist[MethodID]
-				if method == nil then
-					-- something is wrong
-					return false, "Could not locate method for this reponse message, UPnP device left?"
-				end
-				--response[i] = self:GetMessageValueByKey(msg, "retval") or ""	-- 2nd argument is return value
-				--i = i + 1
-				-- now add all OUT parameters
-				for n,argID in ipairs(method.order) do	-- loop through the arguments in the correct order as specified
-					if self.IDlist[argID].direction == "out" then
-						-- got an out-going parameter, get value and add it
-						response[i] = self:GetMessageValueByKey(msg, argID) or ""
-                        if response[i] == "<<chopped_it>>" then
-                            -- it was chopped, so we must reconstruct
-                            local c = 1
-                            local kv
-                            response[i] = ""
-                            repeat
-                                kv = self:GetMessageValueByKey(msg, argID .. "-" .. c)
-                                if kv then
-                                    response[i] = response[i] .. kv
-                                end
-                                c = c + 1
-                            until kv == nil
-                        end
-                        response[i] = self:ConvertToType(response[i], self.IDlist[argID].variable)
-						i = i + 1
-					end
-				end
-				-- response table completed, now return the values
-				return true, unpack(response)
-			end
-		end
+		return queueItem.CallID --self:WaitForResponse(method.ID, self.CallID - 1)
 	end,
 
+    HandleMethodResult = function(self, msg)
+        -- handle incoming messages with method results
+        local callid = self:GetMessageValueByKey(msg, "callid")
+        if callid ~= nil then
+            if self.ResponseQueue[callid] ~= nil then
+                -- its a response we're waiting for, so collect and remove from queue
+                local myCall = self.ResponseQueue[callid]
+                self.ResponseQueue[callid] = nil
+                -- deal with reponse
+                local response = {}
+                local success = (string.lower(self:GetMessageValueByKey(msg, "success") or "") == "true")
+                if not success then
+                    -- failed call, report error
+                    table.insert(response, false)
+                    table.insert(response, self:GetMessageValueByKey(msg, "error") or "No error message was provided")
+                else
+                    -- successfull call, dissect response
+                    -- lookup the method it was a response to
+                    local method = self.IDlist[myCall.MethodID]
+                    if method == nil then
+                        -- something is wrong
+                        table.insert(response, false)
+                        table.insert(response, "Could not locate method for this reponse message, UPnP device left?")
+                    else
+                        -- now add success and all OUT parameters to return
+                        table.insert(response, true)
+                        for n,argID in ipairs(method.order) do	-- loop through the arguments in the correct order as specified
+                            if self.IDlist[argID].direction == "out" then
+                                -- got an out-going parameter, get value and add it
+                                local r = self:GetMessageValueByKey(msg, argID) or ""
+                                if r == "<<chopped_it>>" then
+                                    -- it was chopped, so we must reconstruct
+                                    local c = 1
+                                    local kv
+                                    r = ""
+                                    repeat
+                                        kv = self:GetMessageValueByKey(msg, argID .. "-" .. c)
+                                        if kv then
+                                            r = r .. kv
+                                        end
+                                        c = c + 1
+                                    until kv == nil
+                                end
+                                -- convert to proper type and add to return list
+                                table.insert(response, self:ConvertToType(r, self.IDlist[argID].variable))
+                            end
+                        end
+                    end
+                end
+                -- response table completed, now return the values to the callback function
+                if type(myCall.CallBack) == "function" then
+                    local result, err = pcall(myCall.CallBack, unpack(response))
+                    if not result then
+                        print ("Error returned by the callback for a UPnP method call result;")
+                        print ("    CallID  : " , myCall.CallID)
+                        print ("    MethodID: " , myCall.MethodID)
+                        print ("    Error   : " , err)
+                    end
+                end
+            end
+        end
+    end,
 
 	AppendCall = function (self, method)
 		-- takes a 'method' table and appends an 'execute' function
 		method.execute = function (method, ...) return self:CallMethod(method, unpack(arg)) end
+		method.executeasync = function (method, callback, ...) return self:CallMethodAsync(method, callback, unpack(arg)) end
 		return method
 	end,
 

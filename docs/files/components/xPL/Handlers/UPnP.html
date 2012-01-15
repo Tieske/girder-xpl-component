@@ -101,6 +101,11 @@
 	</tr>
 
 	<tr>
+	<td class="name" nowrap><a href="#UPnP.CallMethodAsync">UPnP.CallMethodAsync</a>&nbsp;(self, methodid, callback, ...)</td>
+	<td class="summary">Calls a UPnP method.</td>
+	</tr>
+
+	<tr>
 	<td class="name" nowrap><a href="#UPnP.PollValue">UPnP.PollValue</a>&nbsp;(self, id)</td>
 	<td class="summary">Requests current value of a device, service or variable.</td>
 	</tr>
@@ -147,6 +152,56 @@ Calls a UPnP method. The call is synchroneous and will (wait for) and return the
 	
 	<li>
 	  <code><em>methodid</em></code>: The ID of the method to execute
+	</li>
+	
+	<li>
+	  <code><em>...</em></code>: parameters for the method, all parameters MUST be provided for the call to succeed
+	</li>
+	
+</ul>
+
+
+
+
+<h3>Usage:</h3>
+<ul><pre class=example>-- The ID's below are fixed, and will not change over time (but might after firmware update)<br/>local RecivaUUID = "c29e7602-328f-444d-911c-7cdc8bc74768"<br/>local RadioServiceID = "urn_reciva-com_serviceId_RecivaRadio"<br/>-- Get method "GetPlaybackDetails" from the device/service<br/>local m = UPnP.devices[RecivaUUID].services[RadioServiceID].methods["GetPlaybackDetails"]<br/>&nbsp<br/>-- method1: call directly on method table (must provide each argument, even though not used!)<br/>local success, result = m:execute("", "")<br/>&nbsp<br/>-- method2: call indirectly using generic call (must provide each argument, even though not used!)<br/>local success, result = UPnP:CallMethod(m.ID, "", "")	-- m.ID additional argument needed here</pre></ul>
+
+
+
+<h3>Return values:</h3>
+<ol>
+	
+	<li>success (boolean) <code>true</code> if the call was succesfull, if it failed, the second return value will contain the error.</li>
+	
+	<li>additional return values are all the OUT arguments of the method</li>
+	
+</ol>
+
+
+
+</dd>
+
+
+
+
+<dt><a name="UPnP.CallMethodAsync"></a><strong>UPnP.CallMethodAsync</strong>&nbsp;(self, methodid, callback, ...)</dt>
+<dd>
+Calls a UPnP method. The call is asynchroneous and will return the results through a callback function. There is a fixed timeout of 20 seconds if the UPnP device does not respond.<br/>There are 2 ways to call a method; 1) directly on the method table, 2) indirectly using a generic call. See the example below for the difference, the results will be identical. ================================= MUST BE UPDATED !!! =================================
+
+
+<h3>Parameters:</h3>
+<ul>
+	
+	<li>
+	  <code><em>self</em></code>: 
+	</li>
+	
+	<li>
+	  <code><em>methodid</em></code>: The ID of the method to execute
+	</li>
+	
+	<li>
+	  <code><em>callback</em></code>: The callback function to call with the results of the method call
 	</li>
 	
 	<li>
