@@ -3,15 +3,15 @@
 -- <a href="http://xplproject.org.uk">xPL is an open source home automation protocol</a> that uses simple
 -- text based messages to communicate and provides automatic discovery of devices on the network.
 -- <br/><br/>
--- After the component has been enabled within Girder and 
+-- After the component has been enabled within Girder and
 -- <a href="http://www.thijsschreijer.nl/blog/?page_id=150">the xPL infrastructure has been setup</a>,
--- Girder will automatically connect to the xPL network. xPL uses 
--- <a href="http://xplproject.org.uk/wiki/index.php?title=XPL_Message_Schema">message schemas</a> to 
--- identify and specify message contents. For several message schemas handler files have been provided 
+-- Girder will automatically connect to the xPL network. xPL uses
+-- <a href="http://xplproject.org.uk/wiki/index.php?title=XPL_Message_Schema">message schemas</a> to
+-- identify and specify message contents. For several message schemas handler files have been provided
 -- and also a template is available to create your own (this requires lua coding).
--- If the installed handlers do not prevent it (see below), a Girder event will be created for received 
+-- If the installed handlers do not prevent it (see below), a Girder event will be created for received
 -- messages.
--- The event source will be xPLGirder, the event string will have the format of an xPL filter and the 
+-- The event source will be xPLGirder, the event string will have the format of an xPL filter and the
 -- event payloads will be;
 -- <ol><li>the xPL message 'pickled'</li>
 -- <li>nil</li>
@@ -25,7 +25,7 @@
 -- values of the handlers determine if there will be a generic event. If at least one handler returns <code>true</code>
 -- after handling the message then the generic xPLGirder event for received messages will be suppressed. Only
 -- if none of the handlers returns <code>true</code> the generic event will be raised.
--- <br/><br/>xPLGirder installs in a global table <code>xPLGirder</code>, but that global is only available after 
+-- <br/><br/>xPLGirder installs in a global table <code>xPLGirder</code>, but that global is only available after
 -- the component has been started. Several functions can be used through this global table.
 -- <br/><br/>
 -- @class module
@@ -162,7 +162,7 @@ local xPLGirder = Super:New ( {
     Version = Version,
     License = License,
     ConfigFile = ConfigFile,
-    
+
     Source = false,
     Address = false,
     HostName = false,
@@ -170,17 +170,17 @@ local xPLGirder = Super:New ( {
     xPLListenToAddresses = false,
     xPLBroadcastAddress = false,
     Port = UDP_SOCKET,
-    
+
     DefaultSettings = DefaultSettings,
     Requires = Requires,
     License = License,
-    
+
     Handlers = Handlers, -- xPL message handler sub components
     EnabledHandlers = {}, -- list of all enabled handlers, indexed by filename
-    
+
     xPLDevices = {},
     hbeatCount = 0,    -- counts own heartbeats send until one is received
-    
+
     Requires = {
         {
             Type = 'Version',
@@ -191,7 +191,7 @@ local xPLGirder = Super:New ( {
             Identifier = 10045,
         },
     },
-    
+
 
     Initialize = function (self)
         self:AddEvents (Events)
@@ -201,8 +201,8 @@ local xPLGirder = Super:New ( {
 
         return Super.Initialize (self)
     end,
-    
-    
+
+
     Loaded = function (self)
         self.DUICopied = false
 
@@ -257,7 +257,7 @@ local xPLGirder = Super:New ( {
 
     Enable = function (self)
         local b = Super.Enable (self)
-    
+
         local loggerc = assert (ComponentManager:GetComponentUsingName ('Logging'))
         local logdir = loggerc:GetSettings ().Directory
         if not win.PathExists (logdir) then
@@ -270,7 +270,7 @@ local xPLGirder = Super:New ( {
         self:LogLocal (0,'Starting')
 
         self:SetMode ('Startup')
-        
+
         for _,c in ipairs (Handlers) do
             if not ComponentManager:GetComponentUsingID (c.id) then
                 local component = assert (self:LoadHandler (c.fn),c.fn)
@@ -289,8 +289,8 @@ local xPLGirder = Super:New ( {
             end
         end
 
-        self:SetupNetworking ()    
-		
+        self:SetupNetworking ()
+
 		--self.Source = 'girder.'..string.gsub (string.lower(self.HostName), "%p", ""),
         self.Source = 'tieske-girder.'..string.gsub (string.lower(self.HostName), "%p", ""),
 
@@ -304,7 +304,7 @@ local xPLGirder = Super:New ( {
         self.Ready = true
 
         self:Event (self.Events.Ready)
-        
+
         return b
     end,
 
@@ -313,15 +313,15 @@ local xPLGirder = Super:New ( {
         self:SetMode ('Offline')
 
         self:DisableHandlers ()
-        
+
         self:ShutdownReciever()
 
         self:AllDevicesLeaving()
 
         return Super.Disable (self)
     end,
-    
-    
+
+
     LoadHandler = function (self,filename)
         local component = ComponentManager:ReadComponentFile (self.ComponentSubDirectory..'\\Handlers\\'..filename..'.lua')
         if not component then
@@ -346,8 +346,8 @@ local xPLGirder = Super:New ( {
             end
         end
     end,
-    
-    
+
+
     SetupNetworking = function (self)
         local Address, HostName = win.GetIPInfo(0)
         self.Address = Address
@@ -520,17 +520,17 @@ local xPLGirder = Super:New ( {
         end
     end,
 
-    
+
     ProcessMessageHandlers = function (self, msg)
         --print ('xpl process msg',msg)
         local result = false
         local s, r
-        
+
         -- loop through all handlers
         for _, handler in pairs(self.EnabledHandlers) do
             result = handler:ProcessMessage (msg)
         end
-            
+
         return result
     end,
 
@@ -572,7 +572,7 @@ local xPLGirder = Super:New ( {
                         -- existing device, set new expire time
                         self.xPLDevices[source].expire = expire
                     end
-                    
+
                 end
             end
             return true     -- msg was a heartbeat
@@ -586,7 +586,7 @@ local xPLGirder = Super:New ( {
         return false        -- msg was not a heartbeat
     end,
 
-    
+
     DeviceLeaving = function (self, dev)
         -- Device left
         if self.xPLDevices[dev] then
@@ -597,13 +597,13 @@ local xPLGirder = Super:New ( {
         end
     end,
 
-    
+
     AllDevicesLeaving = function (self)
         for dev, _ in pairs(self.xPLDevices) do
             self:DeviceLeaving(dev)
         end
     end,
-    
+
 
     CheckDevicesExpiring = function (self)
         local n = date:now()
@@ -615,13 +615,13 @@ local xPLGirder = Super:New ( {
         end
     end,
 
-    
+
     SetMode = function (self, m)
         self.Mode = m
         self:SetStatus(m)
         gir.TriggerEvent('Status changed to: ' .. self.Mode, self.ID, self.Mode)
     end,
-    
+
 
     GetSourceDevices = function (self)
         return table.copy(self.xPLDevices)
@@ -647,18 +647,27 @@ local xPLGirder = Super:New ( {
         if not msg then
             error ("Must provide a message string, call as; SendMessage( self, MsgString )", 2)
         end
-        if type(msg) == "string" then
-            --print ('xpl sending',msg)
-            local result, error = self.Receiver:sendto(msg,self.xPLBroadcastAddress, XPL_PORT)
-            if not result then
-                print ("Error sending xPL message: " .. tostring(error))
-            end
-        elseif type(msg) == "table" then
-----------------------------
--- to be implemented here --
-----------------------------
+        if type(msg) == "table" then
+            ----------------------------
+            -- to be implemented here --
+            ----------------------------
+            -- now convert message table to string value
             table.print (msg)
             error ("sending objects is not implemented yet!")
+        end
+        if type(msg) == "string" then
+            -- create socket
+            local skt, emsg = socket.udp()			-- create and prepair socket
+            if skt == nil then
+                -- failure
+                print ("Failed to send xPL message, cannot create UDP socket; " .. emsg)
+                return
+            end
+            skt:setoption("broadcast", true)
+            local result, emsg = skt:sendto(msg, self.xPLBroadcastAddress, XPL_PORT)
+            if not result then
+                print ("Error sending xPL message: " .. tostring(emsg))
+            end
         end
     end,
 
