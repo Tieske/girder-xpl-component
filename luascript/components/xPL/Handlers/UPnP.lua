@@ -69,7 +69,7 @@ local typetable = {         -- everything not in the table is considered string
 }
 
 
-local Super = require 'Components.xPL.Base Handler'
+local Super = require 'Components.xPL.Handlers.Base'
 
 local myNewHandler = Super:New ( {
 
@@ -646,7 +646,7 @@ local myNewHandler = Super:New ( {
 					local pdevice = self.IDlist[pservice.parent]	-- gets the parent device of the service
 					if pdevice ~= nil then
 						local devname = pdevice.name or "(unannounced device)"					-- gets the actual device name
-						gir.TriggerEvent("UPnP value update " .. devname .. ":" .. svar.name, self.xPL.ID, svar.ID, v, old)
+						gir.TriggerEvent("UPnP value update " .. devname .. ":" .. svar.name, self.xPL.ID, svar.ID,tostring (v))
                         self:UPnPDeviceVariableUpdate (pdevice,pservice,svar,old)
 					else
 						-- device not found, assume announcement incomplete, no girder event
@@ -754,7 +754,7 @@ local myNewHandler = Super:New ( {
 		self.CallID = self.CallID + 1					-- increase unique ID by 1
         -- create queueitem to wait for the response
         local queueItem = {
-            CallID = CallID - 1,
+            CallID = self.CallID - 1,
             MethodID = method.ID,
             TimeOut = date:now(),
             CallBack = callback,
