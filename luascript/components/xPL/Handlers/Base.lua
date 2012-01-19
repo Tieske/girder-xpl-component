@@ -79,11 +79,6 @@ local DefaultSettings = {
         ComponentManager = false, -- log up to the CM, note both parent and cm should not be true as this could cause duplicate logging to the cm
     },
 
-    DefaultControllerLogSettings = {  -- settings that specify starting point of all controllers
-        FileLogLevel = 0,
-        ConsoleLogLevel = 4,
-        DaysToKeep = 5,
-    },
 }
 
 
@@ -91,54 +86,17 @@ local Events = table.makeset ( {
 	'Property',
 } )
 
--- not sure we need this.... leave for now
-local BaseProperties = {
---[[
-    ExProperty = {
-        Save = false,
-        Default = false,
-        Event = Events.Property,
-        GirderEvent = true,
-		LogLevel = 3,
-    },
-]]
-}
-
-
-	--[[
-	first define a list of filters to trigger the message handler. Any filter that has a positive
-	match will trigger the handler. Each Handler will be called once per message, so if this handler
-	has 2 filters that match, only the first will call the handler.
-
-	a filter is a dot ('.') separated string with xPL message elements, each element may be
-	wildcarded with an asterix ('*').
-
-		filter = [msgtype].[vendor].[device].[instance].[schemaclass].[schematype]
-
-	The default filter '*.*.*.*.*.*' will call the handler for every message received
-
-	]]--
-
 local DefaultFilters = {
 		"*.*.*.*.*.*"
 }
     
 
 
-
-
-
-
 local Super = require 'Components.Classes.Base'
 
 
 local Base = Super:New ( {
---[[
-    ID = PluginID,
-    Name = PluginName,
-    Description = Description,
-    ConfigFile = ConfigFile,
-    Version = Version,]]
+
     Hidden = true,
 
     Requires = {
@@ -269,6 +227,7 @@ local Base = Super:New ( {
         return key
     end,
     
+
     FilterMatch = function (self, msg, filter)
         -- filter = [msgtype].[vendor].[device].[instance].[class].[type]
         -- wildcards can be used; '*'
@@ -372,11 +331,6 @@ local Base = Super:New ( {
 
 
     Print = function (self)
-        local controllers = self:GetControllers ()
-
-        for _,controller in ipairs (controllers) do
-            controller:Print ()
-        end
     end,
 
 
