@@ -23,9 +23,9 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 
 local DeviceClasses = {
- 
-    ['urn:schemas-upnp-org:device:MediaRenderer:1'] = require 'Components.UPnP (xPL).UPnP Devices.Media Renderer',
-    ['urn:schemas-upnp-org:device:DimmableLight:1'] = require 'Components.UPnP (xPL).UPnP Devices.Dimmable Light',
+
+    ['urn:schemas-upnp-org:device:MediaRenderer:1'] = require 'Components.UPnP Devices.Media Renderer',
+    ['urn:schemas-upnp-org:device:DimmableLight:1'] = require 'Components.UPnP Devices.Dimmable Light',
 }
 
 
@@ -64,7 +64,7 @@ local Requires = {
         Type = 'Version',
         Identifier = 'Pro',
     },
-    
+
     { -- xPL
         Type = 'Component',
         Identifier = 13100,
@@ -73,7 +73,7 @@ local Requires = {
 
 
 local Events = table.makeset ({
-    'DeviceArrived',  
+    'DeviceArrived',
     'DeviceLeft',
     'DeviceVariable',
 })
@@ -93,11 +93,11 @@ local UPnP = Super:New ( {
     DefaultSettings = DefaultSettings,
     Requires = Requires,
     License = License,
-    
+
     UPnPXPLHandler = false, -- ref to UPnP handler component
-    
+
     SubscribeFunction = false,
-    
+
     InterfaceDevices = {},
 
     Loaded = function (self)
@@ -177,19 +177,19 @@ local UPnP = Super:New ( {
         end
 
         self:LogLocal (0,'Starting')
-        
+
         self.UPnPXPLHandler = assert (ComponentManager:GetComponentUsingID (13101))
-        
+
         self.SubscribeFunction = function (...)
             self:XPLUPnPEventHandler (unpack (arg))
         end
-        
+
         self.UPnPXPLHandler:Subscribe (self.SubscribeFunction)
 
         self.UPnPXPLHandler:RequestAnnounce ()
-        
+
         idl = self.InterfaceDevices -- *********** delete
-        
+
         return b
     end,
 
@@ -214,12 +214,12 @@ local UPnP = Super:New ( {
         return assert (self.ComponentSubDirectory)
     end,
 
-    
+
     -- receives events from the xPL UPnP handler component
-    XPLUPnPEventHandler = function (self,...) 
+    XPLUPnPEventHandler = function (self,...)
         --print ('got upnp event',unpack (arg))
         local event = arg [1]
-        
+
         if event == self.UPnPXPLHandler.Events.DeviceArrived then
             local pdevice = assert (arg [2])
             self:UPnPDeviceArrived (pdevice)
@@ -229,32 +229,32 @@ local UPnP = Super:New ( {
             local svar = assert (arg [4])
             self:UPnPDeviceVariableUpdate (pdevice,pservice,svar)
         end
-            
+
     end,
-    
-    
+
+
     UPnPDeviceArrived = function (self,pdevice)
         if not self.InterfaceDevices [pdevice.deviceid] then
             local class = DeviceClasses [pdevice.type]
-        
+
             if class then
                 local idevice = assert (class:Create (pdevice.deviceid))
                 self.InterfaceDevices [idevice:GetUUID ()] = idevice
-            else 
+            else
 --                print ('no device for type',pdevice.type)
             end
         end
     end,
-    
-    
+
+
     UPnPDeviceVariableUpdate = function (self,pdevice,pservice,svar)
         local idevice = self.InterfaceDevices [pdevice.deviceid]
         if idevice then
             idevice:UPnPVariableUpdate (pservice,svar)
         end
     end,
-    
-    
+
+
     GetUPnPDevice = function (self,UUID)
         return self.UPnPXPLHandler:GetUPnPDevice (UUID)
     end,

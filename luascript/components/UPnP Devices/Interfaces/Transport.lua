@@ -27,46 +27,46 @@ local p2g = {
 }
 
 local g2pm = {
-    ['Stop'] = 'Stop', 
-    ['Play'] = 'Play', 
-    ['Pause'] = 'Pause', 
-    ['Next'] = 'Next', 
+    ['Stop'] = 'Stop',
+    ['Play'] = 'Play',
+    ['Pause'] = 'Pause',
+    ['Next'] = 'Next',
     ['Previous'] = 'Previous',
-} 
+}
 
 
 local tvs = {
-    'Stop', 
-    'Play', 
-    'Pause', 
-    'Next', 
+    'Stop',
+    'Play',
+    'Pause',
+    'Next',
     'Previous',
-} 
+}
 
 
-local Super = require 'Components.UPnP (xPL).UPnP Devices.Interfaces.Base'
+local Super = require 'Components.UPnP Devices.Interfaces.Base'
 
 local interface = Super:New ( {
 
     UPnPServiceID = 'urn:upnp-org:serviceId:AVTransport',
-    
+
     UPnPVariableName = 'TransportState',
-    
+
     DMControlID = 'Transport',
 
-    
+
     --[[
-    
+
     UPnP
-    
+
     --]]
-    
-    
+
+
     SetUPnPVariableValue = function (self,value)
         local service = self:GetUPnPDeviceService ()
-        
+
         local methodname = g2pm [value]
-        
+
         if methodname then
             local method = service.methods [methodname]
             -- special handle play.....
@@ -77,7 +77,7 @@ local interface = Super:New ( {
             end
         end
 	end,
-    
+
 
     UPnPVariableUpdate = function (self)
         local value = self:GetUPnPVariableValue ()
@@ -88,9 +88,9 @@ local interface = Super:New ( {
             self:UpdateControl (new)
         end
     end,
-    
-    
-    
+
+
+
 	--[[
 
 	G5 DM Interface
@@ -101,11 +101,11 @@ local interface = Super:New ( {
     -- creates a control for the device (if needed), returns false if this control is not valid for the supplied upnp device
     CreateControl = function (self)
         local Control = Controls.Transport:New({ID = self.DMControlID, Name = self.DMControlID, Device = self.DMDevice, Values = tvs,})
-        
+
         self.DMDevice:AddControl(Control)
     end,
-    
-    
+
+
 } )
 
 
