@@ -12,15 +12,18 @@ echo.
 echo Now empty documentation directory...
 del /S/Q "docs"
 echo.
-echo Now empty handlers and support directory...
+echo Now empty handlers, UPnP Devices and support directory...
 del /Q "luascript\components\xpl\Handlers\*.*"
+del /Q "luascript\components\UPnP Devices\*.*"
 del /Q "luascript\components\xpl\Support\*.*"
 
 rem copy files
 echo.
-echo Now copying xPL component and message handling files...
+echo Now copying UPnP devices, xPL component and message handling files...
 copy "%girder%\luascript\Components\xPL.lua" luascript\Components\
+copy "%girder%\luascript\Components\UPnP*.lua" luascript\Components\
 xcopy /S/E/Y "%girder%\luascript\Components\xPL\*.*" luascript\components\xPL\
+xcopy /S/E/Y "%girder%\luascript\Components\UPnP Devices\*.*" "luascript\components\UPnP Devices\"
 echo.
 echo Now copying userinterface and action files...
 xcopy /S/E/Y "%girder%\plugins\treescript\xpl*.*" plugins\treescript\

@@ -36,6 +36,9 @@ rd /S/Q "%girder%\luascript\components\xpl\Support"
 echo.
 echo Now removing older version Handlers directory...
 rd /S/Q "%girder%\luascript\xPLHandlers"
+echo.
+echo Now removing older version UPnP Devices directory...
+rd /S/Q "%girder%\luascript\components\UPnP Devices"
 
 rem create empty directories and copy files
 echo.
@@ -50,12 +53,15 @@ md "%girder%\luascript\components\xpl\Handlers"
 echo.
 echo Now creating Support directory...
 md "%girder%\luascript\components\xpl\Support"
+echo.
+echo Now creating UPnP Devices directory...
+md "%girder%\luascript\components\UPnP Devices"
 
 echo.
 echo Now copying documentation...
 xcopy /S/E docs\*.* "%girder%\%girderdoc%\xPL"
 echo.
-echo Now copying xPL component, message handling and support files...
+echo Now copying xPL component, message handling, UPnP Devices and support files...
 xcopy /S/E/Y luascript\*.* "%girder%\luascript\"
 echo.
 echo Now copying userinterface and action files...
