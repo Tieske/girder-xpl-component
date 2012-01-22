@@ -5,6 +5,10 @@
 Base Class for a UPnP device and Device Manager Device
 
 
+Provides an interface container between a UPnP xPL device and the G5 DM Device
+
+Maps variables/methods from the UPnP device to the controls of G5 DM device through a table of interfaces.  
+
 
 --]]
 
@@ -103,6 +107,16 @@ local Base = {
         return false
     end,
             
+            
+    -- gets text to for display in dui
+    GetDisplayName = function (self)
+        local pdevice = self:GetUPnPDevice ()
+        local ps = pdevice and pdevice.name or 'Offline'
+        
+        local s = self:GetDMDevice ():GetLocationName () .. '['..ps..']'
+        
+        return s
+    end,
 
 
     --[[
@@ -119,6 +133,11 @@ local Base = {
     
     GetUPnPDevice = function (self)
         return self.UPnPDevice    
+    end,        
+    
+    
+    SetUPnPDevice = function (self,pdevice)
+        self.UPnPDevice = pdevice
     end,        
     
     
@@ -146,10 +165,16 @@ local Base = {
         local interface = self:GetInterfaceForUPnPServiceVariable (pservice.service,svar.name)
         
         if interface then
-            interface:UPnPVariableUpdate ()
+            interface:UPnPVariableUpdate (pservice,svar)
         else
             --print ('no service')
         end
+    end,
+    
+    
+    UpdateUPnPVariables = function (self)
+        local pdevice = self:GetUPnPDevice ()
+        pdevice:poll ()
     end,
     
     
@@ -234,8 +259,15 @@ local Base = {
 	end,
 
 
-	-- action requested from the G5 DM
+	-- action requested from the G5 DM, do not override, use method below
 	DMAction = function (self,controlid,value)
+        if self:GetUPnPDevice () then
+            self:ProcessDMAction (controlid,value)
+        end
+    end,
+       
+       
+    ProcessDMAction = function (self,controlid,value)
         local interface = self:GetInterfaceForDMControlID (controlid)
         
         if interface then
@@ -259,6 +291,12 @@ local Base = {
 	GetDMClass = function (self)
 		return self.DMClass
 	end,
+    
+    
+    SetStatus = function (self,status)
+        --print ('interface set status',status)
+        self.DMDevice:SetStatus (status)
+    end,
 
     
 	--[[

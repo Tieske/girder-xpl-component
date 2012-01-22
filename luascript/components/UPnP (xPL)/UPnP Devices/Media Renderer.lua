@@ -40,8 +40,7 @@ local class = Super:New ( {
 
     BuildInterfaces = function (self)
         local vi = vic:Create ( { 
-            DMDevice = self:GetDMDevice (),
-            UPnPDevice = self:GetUPnPDevice (),
+            Parent = self,
         } )
         
         if vi then
@@ -49,8 +48,7 @@ local class = Super:New ( {
         end
         
         local mi = mic:Create ( { 
-            DMDevice = self:GetDMDevice (),
-            UPnPDevice = self:GetUPnPDevice (),
+            Parent = self,
         } )
         
         if mi then
@@ -58,8 +56,7 @@ local class = Super:New ( {
         end
         
         local ti = tic:Create ( { 
-            DMDevice = self:GetDMDevice (),
-            UPnPDevice = self:GetUPnPDevice (),
+            Parent = self,
         } )
         
         if ti then

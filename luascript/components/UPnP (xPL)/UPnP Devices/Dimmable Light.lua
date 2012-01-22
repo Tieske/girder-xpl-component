@@ -32,9 +32,9 @@ local class = Super:New ( {
                 local value = svar.value
                 if value then -- on 
                     local level = tonumber (self:GetUPnPDeviceServiceVariable (dsid,'LoadLevelStatus').value) or 100
-                    self.DMDevice:EventFromProvider (DeviceManager.Devices.Events.Condition,'Level',level)
+                    self:GetDMDevice ():EventFromProvider (DeviceManager.Devices.Events.Condition,'Level',level)
                 else -- off
-                    self.DMDevice:EventFromProvider (DeviceManager.Devices.Events.Condition,'Level',0)
+                    self:GetDMDevice ():EventFromProvider (DeviceManager.Devices.Events.Condition,'Level',0)
                 end
             end
         elseif pservice.service == dsid then -- dimming
@@ -43,7 +43,7 @@ local class = Super:New ( {
                 local status = self:GetUPnPDeviceServiceVariable (psid,'Status').value
                 if status then
                     local level = svar.value
-                    self.DMDevice:EventFromProvider (DeviceManager.Devices.Events.Condition,'Level',level)
+                    self:GetDMDevice ():EventFromProvider (DeviceManager.Devices.Events.Condition,'Level',level)
                 end
             end
         else
@@ -53,7 +53,7 @@ local class = Super:New ( {
     
     
 	-- action requested from the G5 DM
-	DMAction = function (self,controlid,value)
+	ProcessDMAction = function (self,controlid,value)
         if controlid == 'Level' then
             local ls = self:GetUPnPDeviceService (dsid)
             local ps = self:GetUPnPDeviceService (psid)

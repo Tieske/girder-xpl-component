@@ -35,12 +35,23 @@ local interface = Super:New ( {
     --]]
     
     
-    SetUPnPVariableValue = function (self,value)
-        local service = self:GetUPnPDeviceService ()
-        service.methods.SetMute:executeasync (1,'Master',value == 'On')
+    GetSetUPnPVariableValueParameters = function (self,value)
+        return {
+            1,
+            'Master',
+            value == 'On',
+        }
 	end,
     
 
+    GetGetUPnPVariableValueParameters = function (self)
+        return {
+            1,
+            'Master',
+        }
+	end,
+    
+    
     UPnPVariableUpdate = function (self)
         --print ('upnpvariableupdate')
         local value = self:GetUPnPVariableValue ()
@@ -58,8 +69,8 @@ local interface = Super:New ( {
 
     -- creates a control for the device (if needed), returns false if this control is not valid for the supplied upnp device
     CreateControl = function (self)
-        local Control = Controls.Mute:New({Name = self.DMControlID, Device = self.DMDevice}) 
-        self.DMDevice:AddControl(Control)
+        local Control = Controls.Mute:New({Name = self.DMControlID, Device = self:GetDMDevice ()}) 
+        self:GetDMDevice ():AddControl(Control)
     end,
     
     

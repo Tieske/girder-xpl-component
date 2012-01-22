@@ -1,6 +1,6 @@
 --[[
 
-not in use
+not tested
 
 --]]
 
@@ -35,13 +35,13 @@ local interface = Super:New ( {
     
     SetUPnPVariableValue = function (self,value)
         local service = self:GetUPnPDeviceService ()
-        service.methods.SetTarget:execute (value == 'On' and 1 or 0)
+        service.methods.SetTarget:execute (value == 'On' or false)
 	end,
     
     
     UPnPVariableUpdate = function (self)
         local value = tonumber (self:GetUPnPVariableValue ())
-        self.DMDevice:EventFromProvider (DeviceManager.Devices.Events.Condition,'Switch',value == 1 and 'On' or 'Off')
+        self:GetDMDevice ():EventFromProvider (DeviceManager.Devices.Events.Condition,'Switch',value and 'On' or 'Off')
     end,
     
     
