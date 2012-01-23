@@ -183,16 +183,16 @@ local xPLGirder = Super:New ( {
 
     ReceivedBytes = 0,
     SentBytes = 0,
-    
+
     Mode = false, -- connection status to hub
-    
+
     Requires = {
-    
+
         {
             Type = 'Version',
             Identifier = 'Pro',
         },
-        
+
         },
 
 
@@ -466,7 +466,7 @@ local xPLGirder = Super:New ( {
             if data then
                 self.ReceivedBytes = self.ReceivedBytes + string.len (data)
                 self:Event (self.Events.DUI)
-                
+
                 local fromip = string.gsub(err, "%.", "_") -- if data was returned, 2nd argument contains the Sender IP
                 if self.xPLListenToAddresses ~= "ANY" then
                     -- we need to check the from address
@@ -622,18 +622,18 @@ local xPLGirder = Super:New ( {
     SetMode = function (self, m)
         self.Mode = m
         self:SetStatus(m)
-        
+
         self:Event (self.Events.DUI)
-        
+
         gir.TriggerEvent('Status changed to: ' .. self.Mode, self.ID, self.Mode)
     end,
 
 
     GetMode = function (self, m)
-        return self.Mode 
+        return self.Mode
     end,
-    
-    
+
+
     GetSourceDevices = function (self)
         return table.copy(self.xPLDevices)
     end,
@@ -658,13 +658,6 @@ local xPLGirder = Super:New ( {
         if not msg then
             error ("Must provide a message string, call as; SendMessage( self, MsgString )", 2)
         end
-        if type(msg) == "string" then
-            --print ('xpl sending',msg)
-            local result, error = self.Receiver:sendto(msg,self.xPLBroadcastAddress, XPL_PORT)
-            if not result then
-                print ("Error sending xPL message: " .. tostring(error))
-            end
-        elseif type(msg) == "table" then
         if type(msg) == "table" then
             ----------------------------
             -- to be implemented here --

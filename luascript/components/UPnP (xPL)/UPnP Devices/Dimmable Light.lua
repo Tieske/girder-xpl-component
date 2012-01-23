@@ -18,7 +18,7 @@ local dsid = 'urn:upnp-org:serviceId:Dimming.0001'
 local psid = 'urn:upnp-org:serviceId:SwitchPower.0001'
 
 
-local Super = require 'Components.UPnP Devices.Base'
+local Super = require 'Components.UPnP (xPL).UPnP Devices.Base'
 
 local class = Super:New ( {
 

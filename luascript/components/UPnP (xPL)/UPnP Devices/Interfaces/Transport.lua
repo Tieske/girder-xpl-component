@@ -45,7 +45,7 @@ local tvs = {
 }
 
 
-local Super = require 'Components.UPnP Devices.Interfaces.Base'
+local Super = require 'Components.UPnP (xPL).UPnP Devices.Interfaces.Base'
 
 local interface = Super:New ( {
 
@@ -70,21 +70,21 @@ local interface = Super:New ( {
         }
     end,
 
-    
+
     -- object used to get the value of the variable
     GetGetUPnPVariableValueObject = function (self)
         local service = self:GetUPnPDeviceService ()
         return service.methods ['GetTransportInfo']
     end,
-    
-    
+
+
     GetSetUPnPVariableValueObject = function (self,value)
         local methodname = assert (g2pm [value],value)
         local service = self:GetUPnPDeviceService ()
-        
+
         return assert (service.methods [methodname],methodname)
     end,
-        
+
 
     GetSetUPnPVariableValueParameters = function (self,value)
         if value == 'Play' then

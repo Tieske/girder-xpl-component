@@ -52,48 +52,6 @@
 	</li>
 
 	<li>
-		<a href="../../files/components/UPnP (xPL).html">components/UPnP (xPL).lua</a>
-	</li>
-
-	<li>
-		<a href="../../files/components/UPnP Devices/Base.html">components/UPnP Devices/Base.lua</a>
-	</li>
-
-	<li>
-		<a href="../../files/components/UPnP Devices/Dimmable Light.html">components/UPnP Devices/Dimmable Light.lua</a>
-	</li>
-
-	<li>
-		<a href="../../files/components/UPnP Devices/Interfaces/Base.html">components/UPnP Devices/Interfaces/Base.lua</a>
-	</li>
-
-	<li>
-		<a href="../../files/components/UPnP Devices/Interfaces/Dimmer.html">components/UPnP Devices/Interfaces/Dimmer.lua</a>
-	</li>
-
-	<li>
-		<a href="../../files/components/UPnP Devices/Interfaces/Mute.html">components/UPnP Devices/Interfaces/Mute.lua</a>
-	</li>
-
-	<li>
-		<a href="../../files/components/UPnP Devices/Interfaces/Power Switch.html">components/UPnP Devices/Interfaces/Power Switch.lua</a>
-	</li>
-
-	<li>
-		<a href="../../files/components/UPnP Devices/Interfaces/Transport.html">components/UPnP Devices/Interfaces/Transport.lua</a>
-	</li>
-
-	<li>
-		<a href="../../files/components/UPnP Devices/Interfaces/Volume.html">components/UPnP Devices/Interfaces/Volume.lua</a>
-	</li>
-
-	<li>
-		<a href="../../files/components/UPnP Devices/Media Renderer.html">components/UPnP Devices/Media Renderer.lua</a>
-	</li>
-
-	<li><strong>components/xPL.lua</strong></li>
-	
-	<li>
 		<a href="../../files/components/xPL/Handlers/Base.html">components/xPL/Handlers/Base.lua</a>
 	</li>
 
@@ -113,6 +71,8 @@
 		<a href="../../files/components/xPL/Support/xPLParser.html">components/xPL/Support/xPLParser.lua</a>
 	</li>
 
+	<li><strong>components/xpl.lua</strong></li>
+	
 </ul>
 
 
@@ -124,7 +84,7 @@
 
 <div id="content">
 
-<h1>File <code>components/xPL.lua</code></h1>
+<h1>File <code>components/xpl.lua</code></h1>
 
 
 <p>xPLGirder is a Girder component to connect Girder to an xPL network. <a href="http://xplproject.org.uk">xPL is an open source home automation protocol</a> that uses simple text based messages to communicate and provides automatic discovery of devices on the network. <br/><br/>&nbspAfter the component has been enabled within Girder and <a href="http://www.thijsschreijer.nl/blog/?page_id=150">the xPL infrastructure has been setup</a>, Girder will automatically connect to the xPL network. xPL uses <a href="http://xplproject.org.uk/wiki/index.php?title=XPL_Message_Schema">message schemas</a> to identify and specify message contents. For several message schemas handler files have been provided and also a template is available to create your own (this requires lua coding). If the installed handlers do not prevent it (see below), a Girder event will be created for received messages. The event source will be xPLGirder, the event string will have the format of an xPL filter and the event payloads will be; <ol><li>the xPL message 'pickled'</li> <li>nil</li> <li>nil</li> <li>nil</li></ol> <br/>To access the message, just unpickle the payload value; <code>local msg = unpickle(pld1)</code>. Additional events will be created for xPL devices arriving, leaving and the xPL connection status. <br/><br/>The generated events depend upon the message handlers. Whenever a message is received it will be handed to every handler in turn. Each handler will only be called if the message matches the filter list of that handler. If a handler handles a message, if may raise a specific event for that message. The return values of the handlers determine if there will be a generic event. If at least one handler returns <code>true</code> after handling the message then the generic xPLGirder event for received messages will be suppressed. Only if none of the handlers returns <code>true</code> the generic event will be raised. <br/><br/>xPLGirder installs in a global table <code>xPLGirder</code>, but that global is only available after the component has been started. Several functions can be used through this global table. <br/><br/></p>

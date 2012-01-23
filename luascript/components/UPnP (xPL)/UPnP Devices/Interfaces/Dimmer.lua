@@ -17,7 +17,7 @@ require 'DeviceManager.Controls.Time'
 local Controls = DeviceManager.Controls.Classes
 
 
-local Super = require 'Components.UPnP Devices.Interfaces.Base'
+local Super = require 'Components.UPnP (xPL).UPnP Devices.Interfaces.Base'
 
 local interface = Super:New ( {
 
