@@ -20,32 +20,32 @@ local Super = require 'Components.UPnP (xPL).UPnP Devices.Interfaces.Base'
 local interface = Super:New ( {
 
     UPnPServiceID = 'urn:upnp-org:serviceId:SwitchPower.0001',
-
+    
     UPnPVariableName = 'Status',
-
+    
     DMControlID = 'Switch',
 
-
+    
     --[[
-
+    
     UPnP
-
+    
     --]]
-
-
+    
+    
     SetUPnPVariableValue = function (self,value)
         local service = self:GetUPnPDeviceService ()
         service.methods.SetTarget:execute (value == 'On' or false)
 	end,
-
-
-    UPnPVariableUpdate = function (self)
+    
+    
+    UPnPVariableUpdate = function (self,pservice,svar)
         local value = tonumber (self:GetUPnPVariableValue ())
         self:GetDMDevice ():EventFromProvider (DeviceManager.Devices.Events.Condition,'Switch',value and 'On' or 'Off')
     end,
-
-
-
+    
+    
+    
 } )
 
 

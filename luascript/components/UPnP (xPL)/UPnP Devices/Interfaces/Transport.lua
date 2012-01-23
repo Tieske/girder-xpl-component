@@ -100,7 +100,7 @@ local interface = Super:New ( {
 	end,
 
 
-    UPnPVariableUpdate = function (self)
+    UPnPVariableUpdate = function (self,pservice,svar)
         local value = self:GetUPnPVariableValue ()
         local new = p2g [value]
         --print ('upnpvariableupdate',value,type (value),string.len (value), new)

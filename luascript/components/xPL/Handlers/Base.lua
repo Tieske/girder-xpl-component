@@ -226,8 +226,8 @@ local Base = Super:New ( {
         end
         return key
     end,
-    
 
+    
     FilterMatch = function (self, msg, filter)
         -- filter = [msgtype].[vendor].[device].[instance].[class].[type]
         -- wildcards can be used; '*'
