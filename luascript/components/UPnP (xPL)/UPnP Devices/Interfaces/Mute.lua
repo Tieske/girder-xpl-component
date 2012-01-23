@@ -52,7 +52,7 @@ local interface = Super:New ( {
 	end,
     
     
-    UPnPVariableUpdate = function (self)
+    UPnPVariableUpdate = function (self,pservice,svar)
         --print ('upnpvariableupdate')
         local value = self:GetUPnPVariableValue ()
         self:UpdateControl (value and 'On' or 'Off')

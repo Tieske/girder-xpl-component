@@ -38,6 +38,31 @@ local class = Super:New ( {
 
     DMClass = DeviceManager.Devices.Classes.AVRenderer,
 
+	Initialize = function (self,settings)
+        local b = Super.Initialize (self,settings)
+        
+        local ts = self:GetUPnPDeviceService ('urn:upnp-org:serviceId:AVTransport')
+        if ts then
+            local method = ts.methods.GetTransportInfo
+            if method then
+                local callback = function (success,...)
+                    if success then
+                        local svar = self:GetUPnPDeviceServiceVariable ('urn:upnp-org:serviceId:AVTransport','TransportState')
+                        svar.value = arg [1]
+                        
+                        local interface = self:GetInterfaceForUPnPServiceVariable ('urn:upnp-org:serviceId:AVTransport','TransportState')
+                        interface:UPnPVariableUpdate (ts,svar)
+                    end
+                end
+                
+                method:executeasync (callback,0)
+            end
+        end
+        
+        return b 
+    end,
+    
+    
     BuildInterfaces = function (self)
         local vi = vic:Create ( { 
             Parent = self,

@@ -361,6 +361,7 @@ local myNewHandler = Super:New ( {
 		self.DevList[dev.deviceid] = nil
 		self:DeleteElement(dev)
 		-- trigger event girder event for left device
+        self:Event (self.Events.DeviceLeft,dev)
 		gir.TriggerEvent("UPnP device left; " .. dev.name, self.xPL.ID, dev.deviceid)
 	end,
 
@@ -770,6 +771,8 @@ local myNewHandler = Super:New ( {
     HandleMethodResult = function(self, msg)
         -- handle incoming messages with method results
         local callid = self:GetMessageValueByKey(msg, "callid")
+        callid = callid and tonumber (callid)
+        
         if callid ~= nil then
             if self.ResponseQueue[callid] ~= nil then
                 -- its a response we're waiting for, so collect and remove from queue
@@ -816,6 +819,7 @@ local myNewHandler = Super:New ( {
                         end
                     end
                 end
+                
                 -- response table completed, now return the values to the callback function
                 if type(myCall.CallBack) == "function" then
                     local result, err = pcall(myCall.CallBack, unpack(response))
@@ -830,6 +834,7 @@ local myNewHandler = Super:New ( {
         end
     end,
 
+    
 	AppendCall = function (self, method)
 		-- takes a 'method' table and appends an 'execute' function
 		method.execute = function (method, ...) return self:CallMethod(method, unpack(arg)) end
@@ -850,12 +855,14 @@ local myNewHandler = Super:New ( {
 				error("No ID provided for the element to poll for its variables.")
 			end
 			local dev = self.IDlist[pID]
-			if dev.announce ~= "device" and dev.announce ~= "service" and dev.announce ~= "variable" then
-				error("Can only request values for types device, service, and variable. Not for type " .. dev.announce)
-			end
-			local req = "xpl-cmnd\n{\nhop=1\nsource=%s\ntarget=%s\n}\nupnp.basic\n{\ncommand=requestvalue\nid=%s\n}\n"
-			local msg = string.format(req, self.xPL.Source, dev.xpl, pID)
-			self.xPL:SendMessage(msg)
+            if dev then -- make sure device hasn't left
+                if dev.announce ~= "device" and dev.announce ~= "service" and dev.announce ~= "variable" then
+                    error("Can only request values for types device, service, and variable. Not for type " .. dev.announce)
+                end
+                local req = "xpl-cmnd\n{\nhop=1\nsource=%s\ntarget=%s\n}\nupnp.basic\n{\ncommand=requestvalue\nid=%s\n}\n"
+                local msg = string.format(req, self.xPL.Source, dev.xpl, pID)
+                self.xPL:SendMessage(msg)
+            end
 		end
 	end,
 
@@ -1022,6 +1029,11 @@ local myNewHandler = Super:New ( {
 
     GetUPnPDevice = function (self,UUID)
         return UPnP.devices [UUID] or false
+    end,
+
+
+    GetUPnPDevices = function (self)
+        return UPnP.devices 
     end,
 
 

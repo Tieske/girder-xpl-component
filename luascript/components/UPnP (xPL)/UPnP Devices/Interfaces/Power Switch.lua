@@ -39,7 +39,7 @@ local interface = Super:New ( {
 	end,
     
     
-    UPnPVariableUpdate = function (self)
+    UPnPVariableUpdate = function (self,pservice,svar)
         local value = tonumber (self:GetUPnPVariableValue ())
         self:GetDMDevice ():EventFromProvider (DeviceManager.Devices.Events.Condition,'Switch',value and 'On' or 'Off')
     end,

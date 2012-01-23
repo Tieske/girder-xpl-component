@@ -15,10 +15,10 @@ will be loaded when the xPLGirder component initializes.
 ------------------------------------------------------------------------------------------------
 -- xPLGirder is a Girder component to connect Girder to an xPL network.
 -- <br/><br/>
--- This file is a <strong>template</strong> xPL message handler. It can be used to quickly
+-- This file is a <strong>template</strong> xPL message handler. It can be used to quickly 
 -- create new/custom message handlers. The file has extensive code comments with instructions
 -- on how to adapt it to a working handler.</br>
--- Messages received by xPLGirder will be passed to all registered message handlers which
+-- Messages received by xPLGirder will be passed to all registered message handlers which 
 -- have a filter defined that matches the message contents (see code comments for more details).
 -- <br/><br/>
 -- xPLGirder is free software: you can redistribute it and/or modify
@@ -89,7 +89,7 @@ local Events = table.makeset ( {
 local DefaultFilters = {
 		"*.*.*.*.*.*"
 }
-
+    
 
 
 local Super = require 'Components.Classes.Base'
@@ -114,11 +114,11 @@ local Base = Super:New ( {
     Initialize = function (self)
          self:AddToDefaultSettings (DefaultSettings)
          self:AddEvents (Events)
-
+         
         return Super.Initialize (self)
     end,
 
-
+    
     AddProperties = function (self,properties)
         for property,setting in pairs (properties) do
 --            assert (not self [property],property) -- make sure they are unique...
@@ -159,7 +159,7 @@ local Base = Super:New ( {
             self [property] = (self [property] == nil and ((type (settings.Default) == 'table' and table.copy (settings.Default)) or settings.Default)) or self [property]
         end
     end,
-
+    
 
     Enable = function (self)
         if self.Settings.LogMethods.Local then
@@ -167,12 +167,12 @@ local Base = Super:New ( {
         end
 
         self:LogLocal (1,'Starting')
-
+        
         self.xPL = ComponentManager:GetComponentUsingID (13100)
-
+        
         -- Mutex and functions to lock/unlock the handler and make the MessageHandler thread-save
         self._messagelock = thread.newmutex()
-
+        
         self.Filters = self.Filters or DefaultFilters
 
         local b = Super.Enable (self)
@@ -183,7 +183,7 @@ local Base = Super:New ( {
 
     Disable = function (self)
         self._messagelock = nil
-
+        
         local b = Super.Disable (self)
         return b
     end,
@@ -192,23 +192,23 @@ local Base = Super:New ( {
 	MessageLock = function (self)
 		self._messagelock:lock()
 	end,
-
-
+    
+    
 	MessageUnlock = function (self)
 		self._messagelock:unlock()
 	end,
-
-
+    
+    
     GetFilters = function (self)
         return self.Filters
     end,
-
+    
 
     GetxPLEventDevice = function (self)
         return self.xPL.PluginID-- when raising events, use this as source to set it to xPLGirder
     end,
 
-
+    
     -- get a value from the message at hand by its key (the first occurence of that key)
     GetMessageValueByKey = function (self,msg,key)
         for k,v in ipairs(msg.body) do
@@ -218,7 +218,7 @@ local Base = Super:New ( {
         end
     end,
 
-
+    
     CleanKey = function (self,key)
         if type(key) == "string" then
             key = string.gsub(key, '%.', '_' )  -- remove any '.' (dot) as the variable inspector will not show tables with them
@@ -227,7 +227,7 @@ local Base = Super:New ( {
         return key
     end,
 
-
+    
     FilterMatch = function (self, msg, filter)
         -- filter = [msgtype].[vendor].[device].[instance].[class].[type]
         -- wildcards can be used; '*'
@@ -254,19 +254,19 @@ local Base = Super:New ( {
         return true
     end,
 
-
+    
     ProcessMessage = function (self, msg)
         -- loop through all filters
         for _, filter in ipairs(self:GetFilters ()) do
-
+        
             if self:FilterMatch ( msg, filter ) then
                 return self:MessageHandler (msg,filter)
             end
         end
-
+        
         return false
     end,
-
+    
 
 	_MessageHandler = function (self, msg, filter)
 		--[[
@@ -300,14 +300,14 @@ local Base = Super:New ( {
 		return false
 	end,
 
-
+    
     -- do not override
 	MessageHandler = function (self, msg, filter)
 		-- protected handler to run only singular, other threads can only enter after this call completed
 		self:MessageLock()
 		local s,r = pcall(self._MessageHandler, self, msg, filter)
 		self:MessageUnlock()
-
+        
 		if s then	-- success
 			return r
 		else	-- failure
@@ -319,7 +319,7 @@ local Base = Super:New ( {
     		return false
 		end
 	end,
-
+    
     ApplySettings = function (self)
     end,
 
