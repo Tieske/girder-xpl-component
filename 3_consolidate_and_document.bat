@@ -14,16 +14,16 @@ del /S/Q "docs"
 echo.
 echo Now empty handlers, UPnP Devices and support directory...
 del /Q "luascript\components\xpl\Handlers\*.*"
-del /Q "luascript\components\UPnP Devices\*.*"
 del /Q "luascript\components\xpl\Support\*.*"
+del /Q "luascript\components\UPnP (xPL)\*.*"
 
 rem copy files
 echo.
-echo Now copying UPnP devices, xPL component and message handling files...
+echo Now copying UPnP component, xPL component and support files...
 copy "%girder%\luascript\Components\xPL.lua" luascript\Components\
 copy "%girder%\luascript\Components\UPnP*.lua" luascript\Components\
 xcopy /S/E/Y "%girder%\luascript\Components\xPL\*.*" luascript\components\xPL\
-xcopy /S/E/Y "%girder%\luascript\Components\UPnP Devices\*.*" "luascript\components\UPnP Devices\"
+xcopy /S/E/Y "%girder%\luascript\Components\UPnP (xPL)\*.*" "luascript\components\UPnP (xPL)\"
 echo.
 echo Now copying userinterface and action files...
 xcopy /S/E/Y "%girder%\plugins\treescript\xpl*.*" plugins\treescript\
@@ -35,7 +35,7 @@ echo Now starting LuaDoc to generate documentation...
 rem rename luascript\xPLHandlers\xPLHandler_template.txt xPLHandler_template.lua
 rem rename luascript\xPLHandlers\Block_hbeat_and_config.txt Block_hbeat_and_config.lua
 cd luascript
-"%girdocumenter%" -d ..\docs components ..\plugins\treescript\xpl_actions.lua
+"%girdocumenter%" -d ..\docs components\xpl.lua components\xPL ..\plugins\treescript\xpl_actions.lua
 cd ..
 rem "%girdocumenter%" -d docs plugins\treescript\xplgirder.lua luascript
 rem rename luascript\xPLHandlers\xPLHandler_template.lua xPLHandler_template.txt

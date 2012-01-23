@@ -21,11 +21,13 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 ]]
 
 
+local xPLUPnPComponentID = 13101
 
+-- upnp devices we can export to the g5 DM
 local DeviceClasses = {
 
-    ['urn:schemas-upnp-org:device:MediaRenderer:1'] = require 'Components.UPnP Devices.Media Renderer',
-    ['urn:schemas-upnp-org:device:DimmableLight:1'] = require 'Components.UPnP Devices.Dimmable Light',
+    ['urn:schemas-upnp-org:device:MediaRenderer:1'] = require 'Components.UPnP (xPL).UPnP Devices.Media Renderer',
+    ['urn:schemas-upnp-org:device:DimmableLight:1'] = require 'Components.UPnP (xPL).UPnP Devices.Dimmable Light',
 }
 
 
@@ -34,7 +36,7 @@ require 'Classes.Date'
 
 local PluginID = 13200
 local PluginName = 'UPnP (xPL)'
-local Global = false
+local Global = 'UPnPxPL'
 local Description = 'Export/Import UPnP devices to G5 Device Manager via xPL component and UPnP 2 xPL gateway'
 local ConfigFile = 'UPnP (xPL).cfg'
 local Version = '0.0.1'
@@ -53,6 +55,8 @@ local DefaultSettings = {
     },
 
     CurrentUPnPDevices = {}, -- list of all currently enumerate upnp devices
+
+    KnownUPnPDevices = {}, -- list off all previously seen upnp devices indexed by uuid
 
 }
 
@@ -98,7 +102,9 @@ local UPnP = Super:New ( {
 
     SubscribeFunction = false,
 
-    InterfaceDevices = {},
+    InterfaceDevices = {}, -- device list that interface with the g5 dm and upnp/xpl indexed by uuid
+
+    KnownUPnPDevices = {}, -- list of all uupnp devices we have seen indexed by uuid
 
     Loaded = function (self)
         self.DUICopied = false
@@ -106,11 +112,10 @@ local UPnP = Super:New ( {
         self.ComponentSubDirectory = ComponentManager:GetComponentDirectory () .. '\\' .. ComponentSubDirectory
 
         -- copy ui xml file
-        --[[
         local spath = self.ComponentSubDirectory..'\\DUI\\'
         local dpath = win.GetDirectory ('GIRDERDIR')..'\\plugins\\ui\\'
 
-        local res = win.CopyFile (spath ..'HAI OmniLink II.xml',dpath ..'HAI OmniLink II.xml',false)
+        local res = win.CopyFile (spath ..'UPnP (xPL).xml',dpath ..'UPnP (xPL).xml',false)
         if not res then
             self:LogLocal (5,'Error copying dui xml file, error',win.GetLastError ())
             --return false
@@ -122,14 +127,14 @@ local UPnP = Super:New ( {
         local spath = self.ComponentSubDirectory..'\\'
         local dpath = win.GetDirectory ('GIRDERDIR')..'\\plugins\\treescript\\'
 
-        local res = win.CopyFile (spath ..'HAI OmniLink II UI.lua',dpath ..'HAI OmniLink II UI.lua',false)
+        local res = win.CopyFile (spath ..'UPnP (xPL) UI.lua',dpath ..'UPnP (xPL) UI.lua',false)
         if not res then
-            self:LogLocal (5,'error copying treescript ui files, error ',win.GetLastError (),spath ..'HAI OmniLink II.lua')
+            self:LogLocal (5,'error copying treescript ui files, error ',win.GetLastError (),spath ..'UPnP (xPL) UI.lua')
 --            return false
         end
 
         self.DUICopied = true
-]]
+
         return Super.Loaded (self)
     end,
 
@@ -186,10 +191,16 @@ local UPnP = Super:New ( {
 
         self.UPnPXPLHandler:Subscribe (self.SubscribeFunction)
 
-        self.UPnPXPLHandler:RequestAnnounce ()
+        local pdevices = self.UPnPXPLHandler:GetUPnPDevices ()
+        for _,pdevice in pairs (pdevices) do
+            self:UPnPDeviceArrived (pdevice)
+        end
 
-        idl = self.InterfaceDevices -- *********** delete
+        -- shouldn't need to do this
+        --self.UPnPXPLHandler:RequestAnnounce ()
 
+        --idl = self.InterfaceDevices -- *********** delete
+        
         return b
     end,
 
@@ -223,6 +234,9 @@ local UPnP = Super:New ( {
         if event == self.UPnPXPLHandler.Events.DeviceArrived then
             local pdevice = assert (arg [2])
             self:UPnPDeviceArrived (pdevice)
+        elseif event == self.UPnPXPLHandler.Events.DeviceLeft then
+            local pdevice = assert (arg [2])
+            self:UPnPDeviceLeft (pdevice)
         elseif event == self.UPnPXPLHandler.Events.DeviceVariable then
             local pdevice = assert (arg [2])
             local pservice = assert (arg [3])
@@ -230,15 +244,28 @@ local UPnP = Super:New ( {
             self:UPnPDeviceVariableUpdate (pdevice,pservice,svar)
         end
 
+        self:Event (unpack (arg))  -- our events types are the same as for the upnp handler
     end,
 
 
     UPnPDeviceArrived = function (self,pdevice)
-        if not self.InterfaceDevices [pdevice.deviceid] then
+        self.Settings.KnownUPnPDevices [pdevice.deviceid] = {
+            UUID = pdevice.deviceid,
+            Name = pdevice.name,
+            Type = pdevice.type,
+        }
+
+        local idevice = self.InterfaceDevices [pdevice.deviceid]
+        if idevice then
+            --print ('updating interface device')
+            idevice:SetUPnPDevice (pdevice)
+            idevice:SetStatus ('Ok')
+        else
             local class = DeviceClasses [pdevice.type]
 
             if class then
                 local idevice = assert (class:Create (pdevice.deviceid))
+                idevice:SetStatus ('Ok')
                 self.InterfaceDevices [idevice:GetUUID ()] = idevice
             else
 --                print ('no device for type',pdevice.type)
@@ -255,10 +282,34 @@ local UPnP = Super:New ( {
     end,
 
 
+    UPnPDeviceLeft = function (self,pdevice)
+        local idevice = self.InterfaceDevices [pdevice.deviceid]
+        if idevice then
+            idevice:SetStatus ('Not Available')
+        end
+    end,
+    
+    
     GetUPnPDevice = function (self,UUID)
         return self.UPnPXPLHandler:GetUPnPDevice (UUID)
     end,
 
+
+	UPnPRequestAnnounce = function (self)
+        local c = assert (ComponentManager:GetComponentUsingID (xPLUPnPComponentID))
+        
+        c:RequestAnnounce ()
+    end,
+    
+    
+    GetInterfaceDevices = function (self)
+        return self.InterfaceDevices 
+    end,
+
+
+    GetKnownUPnPDevices = function (self)    
+        return self.Settings.KnownUPnPDevices
+    end,
 
     CreateLogger = function (self)
         local logdir = self:GetSettings ().LogDirectory

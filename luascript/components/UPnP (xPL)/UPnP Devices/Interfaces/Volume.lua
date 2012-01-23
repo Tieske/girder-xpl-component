@@ -17,7 +17,7 @@ require 'DeviceManager.Controls.Time'
 local Controls = DeviceManager.Controls.Classes
 
 
-local Super = require 'Components.UPnP Devices.Interfaces.Base'
+local Super = require 'Components.UPnP (xPL).UPnP Devices.Interfaces.Base'
 
 local interface = Super:New ( {
 
@@ -35,12 +35,24 @@ local interface = Super:New ( {
     --]]
 
 
-    SetUPnPVariableValue = function (self,value)
-        local service = self:GetUPnPDeviceService ()
-        service.methods.SetVolume:executeasync (1,'Master',value)
+    -- retuns a list of paramters to send the exexute function
+    GetSetUPnPVariableValueParameters = function (self,value)
+        return {
+            1,
+            'Master',
+            value,
+        }
 	end,
 
 
+    GetGetUPnPVariableValueParameters = function (self)
+        return {
+            1,
+            'Master',
+        }
+	end,
+    
+    
 	--[[
 
 	G5 DM Interface
@@ -50,8 +62,8 @@ local interface = Super:New ( {
 
     -- creates a control for the device (if needed), returns false if this control is not valid for the supplied upnp device
     CreateControl = function (self)
-        local VolumeControl = Controls.Volume:New({Name = self.DMControlID, Device = self.DMDevice})
-        self.DMDevice:AddControl(VolumeControl)
+        local VolumeControl = Controls.Volume:New({Name = self.DMControlID, Device = self:GetDMDevice ()}) 
+        self:GetDMDevice ():AddControl(VolumeControl)
     end,
 
 

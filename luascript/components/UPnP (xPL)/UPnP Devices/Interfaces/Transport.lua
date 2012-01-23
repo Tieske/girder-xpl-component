@@ -6,6 +6,7 @@ Transport
 
 --]]
 
+
 require 'DeviceManager.Controls.Range'
 require 'DeviceManager.Controls.Toggles'
 require 'DeviceManager.Controls.List'
@@ -62,20 +63,40 @@ local interface = Super:New ( {
     --]]
 
 
-    SetUPnPVariableValue = function (self,value)
+    -- subclasses to provide, returns a table of paramets to send the the exexute function
+    GetGetUPnPVariableValueParameters = function (self)
+        return {
+            0,
+        }
+    end,
+
+    
+    -- object used to get the value of the variable
+    GetGetUPnPVariableValueObject = function (self)
         local service = self:GetUPnPDeviceService ()
+        return service.methods ['GetTransportInfo']
+    end,
+    
+    
+    GetSetUPnPVariableValueObject = function (self,value)
+        local methodname = assert (g2pm [value],value)
+        local service = self:GetUPnPDeviceService ()
+        
+        return assert (service.methods [methodname],methodname)
+    end,
+        
 
-        local methodname = g2pm [value]
-
-        if methodname then
-            local method = service.methods [methodname]
-            -- special handle play.....
-            if methodname == 'Play' then
-                method:executeasync (0,1)
+    GetSetUPnPVariableValueParameters = function (self,value)
+        if value == 'Play' then
+            return {
+                0,
+                1,
+            }
             else
-                method:executeasync (0)
+            return {
+                0,
+            }
             end
-        end
 	end,
 
 
@@ -100,9 +121,9 @@ local interface = Super:New ( {
 
     -- creates a control for the device (if needed), returns false if this control is not valid for the supplied upnp device
     CreateControl = function (self)
-        local Control = Controls.Transport:New({ID = self.DMControlID, Name = self.DMControlID, Device = self.DMDevice, Values = tvs,})
+        local Control = Controls.Transport:New({ID = self.DMControlID, Name = self.DMControlID, Device = self:GetDMDevice (), Values = tvs,})
 
-        self.DMDevice:AddControl(Control)
+        self:GetDMDevice ():AddControl(Control)
     end,
 
 

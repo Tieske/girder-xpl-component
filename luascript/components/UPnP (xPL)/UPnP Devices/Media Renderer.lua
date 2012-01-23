@@ -28,11 +28,11 @@ DeviceManager:AddDeviceClass('AVRenderer', AVRenderer)
 
 
 
-local vic = require 'Components.UPnP Devices.Interfaces.Volume'
-local mic = require 'Components.UPnP Devices.Interfaces.Mute'
-local tic = require 'Components.UPnP Devices.Interfaces.Transport'
+local vic = require 'Components.UPnP (xPL).UPnP Devices.Interfaces.Volume'
+local mic = require 'Components.UPnP (xPL).UPnP Devices.Interfaces.Mute'
+local tic = require 'Components.UPnP (xPL).UPnP Devices.Interfaces.Transport'
 
-local Super = require 'Components.UPnP Devices.Base'
+local Super = require 'Components.UPnP (xPL).UPnP Devices.Base'
 
 local class = Super:New ( {
 
@@ -40,8 +40,7 @@ local class = Super:New ( {
 
     BuildInterfaces = function (self)
         local vi = vic:Create ( {
-            DMDevice = self:GetDMDevice (),
-            UPnPDevice = self:GetUPnPDevice (),
+            Parent = self,
         } )
 
         if vi then
@@ -49,8 +48,7 @@ local class = Super:New ( {
         end
 
         local mi = mic:Create ( {
-            DMDevice = self:GetDMDevice (),
-            UPnPDevice = self:GetUPnPDevice (),
+            Parent = self,
         } )
 
         if mi then
@@ -58,8 +56,7 @@ local class = Super:New ( {
         end
 
         local ti = tic:Create ( {
-            DMDevice = self:GetDMDevice (),
-            UPnPDevice = self:GetUPnPDevice (),
+            Parent = self,
         } )
 
         if ti then

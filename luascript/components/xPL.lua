@@ -101,7 +101,7 @@ Events = table.makeset ( {
     'xPLHandlerShutDown',
     'xPLDeviceArrived',
     'xPLDeviceLeft',
-    'Ready',
+    'DUI', -- update dui page
 } )
 
 
@@ -181,16 +181,19 @@ local xPLGirder = Super:New ( {
     xPLDevices = {},
     hbeatCount = 0,    -- counts own heartbeats send until one is received
 
+    ReceivedBytes = 0,
+    SentBytes = 0,
+    
+    Mode = false, -- connection status to hub
+    
     Requires = {
+    
         {
             Type = 'Version',
             Identifier = 'Pro',
         },
-        { -- transport manager
-            Type = 'Component',
-            Identifier = 10045,
+        
         },
-    },
 
 
     Initialize = function (self)
@@ -207,12 +210,12 @@ local xPLGirder = Super:New ( {
         self.DUICopied = false
 
         self.ComponentSubDirectory = ComponentManager:GetComponentDirectory () .. '\\' .. ComponentSubDirectory
---[[
+
         -- copy ui xml file
         local spath = self.ComponentSubDirectory..'\\DUI\\'
         local dpath = win.GetDirectory ('GIRDERDIR')..'\\plugins\\ui\\'
 
-        local res =win.SHFileOperation (spath..'activities.xml',dpath,win.FO_COPY,win.FOF_FILESONLY)
+        local res =win.SHFileOperation (spath..'xpl.xml',dpath,win.FO_COPY,win.FOF_FILESONLY)
         if not res then
             self:Log (5,'error copying xml file')
             return false
@@ -224,12 +227,12 @@ local xPLGirder = Super:New ( {
         local spath = self.ComponentSubDirectory..'\\'
         local dpath = win.GetDirectory ('GIRDERDIR')..'\\plugins\\treescript\\'
 
-        local res =win.SHFileOperation (spath..'activities ui.lua',dpath,win.FO_COPY,win.FOF_FILESONLY)
+        local res =win.SHFileOperation (spath..'xpl ui.lua',dpath,win.FO_COPY,win.FOF_FILESONLY)
         if not res then
             self:Log (5,'error copying treescript ui files')
             return false
         end
-]]
+
         self.DUICopied = true
 
         return Super.Loaded (self)
@@ -299,11 +302,6 @@ local xPLGirder = Super:New ( {
         self:StartHBTimer()
 
         self:SendHeartbeat()
-
-        -- all loaded and enabled, send out ready event so ui can build if open
-        self.Ready = true
-
-        self:Event (self.Events.Ready)
 
         return b
     end,
@@ -466,6 +464,9 @@ local xPLGirder = Super:New ( {
             end
 
             if data then
+                self.ReceivedBytes = self.ReceivedBytes + string.len (data)
+                self:Event (self.Events.DUI)
+                
                 local fromip = string.gsub(err, "%.", "_") -- if data was returned, 2nd argument contains the Sender IP
                 if self.xPLListenToAddresses ~= "ANY" then
                     -- we need to check the from address
@@ -514,9 +515,11 @@ local xPLGirder = Super:New ( {
                     if string.len(pld1) > 2900 then
                         pld1 = "message too large for a payload"
                     end
+                    if not string.find (eventstring,'fragment') then
                     gir.TriggerEvent(eventstring, self.ID, pld1)
                 end
             end
+        end
         end
     end,
 
@@ -619,10 +622,18 @@ local xPLGirder = Super:New ( {
     SetMode = function (self, m)
         self.Mode = m
         self:SetStatus(m)
+        
+        self:Event (self.Events.DUI)
+        
         gir.TriggerEvent('Status changed to: ' .. self.Mode, self.ID, self.Mode)
     end,
 
 
+    GetMode = function (self, m)
+        return self.Mode 
+    end,
+    
+    
     GetSourceDevices = function (self)
         return table.copy(self.xPLDevices)
     end,
@@ -647,6 +658,13 @@ local xPLGirder = Super:New ( {
         if not msg then
             error ("Must provide a message string, call as; SendMessage( self, MsgString )", 2)
         end
+        if type(msg) == "string" then
+            --print ('xpl sending',msg)
+            local result, error = self.Receiver:sendto(msg,self.xPLBroadcastAddress, XPL_PORT)
+            if not result then
+                print ("Error sending xPL message: " .. tostring(error))
+            end
+        elseif type(msg) == "table" then
         if type(msg) == "table" then
             ----------------------------
             -- to be implemented here --
