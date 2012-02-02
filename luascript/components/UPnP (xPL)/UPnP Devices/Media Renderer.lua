@@ -14,10 +14,10 @@ local Devices = DeviceManager.Devices.Classes
 
 local Base = Devices.Base
 
-local AVRenderer = Base:New ( {
+local AVRenderer = Base:New ( { 
 
     Type = 'AV\\Renderer',
-
+    
     AddControls = function (self)
     end,
 
@@ -64,32 +64,32 @@ local class = Super:New ( {
     
     
     BuildInterfaces = function (self)
-        local vi = vic:Create ( {
+        local vi = vic:Create ( { 
             Parent = self,
         } )
-
+        
         if vi then
             self:AddInterface (vi)
         end
-
-        local mi = mic:Create ( {
+        
+        local mi = mic:Create ( { 
             Parent = self,
         } )
-
+        
         if mi then
             self:AddInterface (mi)
         end
-
-        local ti = tic:Create ( {
+        
+        local ti = tic:Create ( { 
             Parent = self,
         } )
-
+        
         if ti then
             self:AddInterface (ti)
         end
-
+        
     end,
-
+    
 
 } )
 

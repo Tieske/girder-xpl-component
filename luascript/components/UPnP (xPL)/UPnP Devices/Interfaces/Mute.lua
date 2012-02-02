@@ -22,19 +22,21 @@ local Super = require 'Components.UPnP (xPL).UPnP Devices.Interfaces.Base'
 local interface = Super:New ( {
 
     UPnPServiceID = 'urn:upnp-org:serviceId:RenderingControl',
-
+    
     UPnPVariableName = 'Mute',
-
+    
     DMControlID = 'Mute',
 
+    --RequestUPnPVariableAtStartup = true, 
 
+    
     --[[
-
+    
     UPnP
-
+    
     --]]
-
-
+    
+    
     GetSetUPnPVariableValueParameters = function (self,value)
         return {
             1,
@@ -42,7 +44,7 @@ local interface = Super:New ( {
             value == 'On',
         }
 	end,
-
+    
 
     GetGetUPnPVariableValueParameters = function (self)
         return {
@@ -57,9 +59,9 @@ local interface = Super:New ( {
         local value = self:GetUPnPVariableValue ()
         self:UpdateControl (value and 'On' or 'Off')
     end,
-
-
-
+    
+    
+    
 	--[[
 
 	G5 DM Interface
@@ -72,8 +74,8 @@ local interface = Super:New ( {
         local Control = Controls.Mute:New({Name = self.DMControlID, Device = self:GetDMDevice ()}) 
         self:GetDMDevice ():AddControl(Control)
     end,
-
-
+    
+    
 } )
 
 

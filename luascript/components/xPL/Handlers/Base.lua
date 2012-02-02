@@ -82,14 +82,12 @@ local DefaultSettings = {
 }
 
 
-local Events = table.makeset ( {
-	'Property',
-} )
-
 local DefaultFilters = {
 		"*.*.*.*.*.*"
 }
     
+local Events = table.makeset ( {
+} )
 
 
 local Super = require 'Components.Classes.Base'
@@ -119,48 +117,6 @@ local Base = Super:New ( {
     end,
 
     
-    AddProperties = function (self,properties)
-        for property,setting in pairs (properties) do
---            assert (not self [property],property) -- make sure they are unique...
-            self.Properties [property] = setting
-        end
-
-        -- build methods for properties, setup defaults....
-        for property,settings in pairs (properties) do
-            local property = property -- upvalues
-            local settings = settings
-			settings.LogLevel = settings.LogLevel or 3
-
-            self ['Get'..property] = function (self)
-                return self [property]
-            end
-
-            self ['Set'..property] = function (self,value)
-				if value == nil then -- set to default
-					value = (type (settings.Default) == 'table' and table.copy (settings.Default)) or settings.Default
-				end
-
-                assert (value ~= nil)
-
-                if self [property] ~= value or settings.AlwaysSendOnSet then
-                    self [property] = value
-                    self:Log (settings.LogLevel,'Set Property ',property,value)
-                    if settings.Event then
-                        self:Event (settings.Event,property,value)
-                    end
-                    if settings.GirderEvent then
-                       -- self:GirderEvent (settings.Event,property,value)
-                    end
-				else
-                    --self:Log (settings.LogLevel,'Set Property (skipped) ',property,value)
-                end
-            end
-
-            self [property] = (self [property] == nil and ((type (settings.Default) == 'table' and table.copy (settings.Default)) or settings.Default)) or self [property]
-        end
-    end,
-    
-
     Enable = function (self)
         if self.Settings.LogMethods.Local then
             self:CreateLogger ()
@@ -169,6 +125,12 @@ local Base = Super:New ( {
         self:LogLocal (1,'Starting')
         
         self.xPL = ComponentManager:GetComponentUsingID (13100)
+        
+        self.xPLSubscribeFunction = function (...)
+            self:xPLEventHandler (unpack (arg))
+        end
+        
+        self.xPL:Subscribe (self.xPLSubscribeFunction)
         
         -- Mutex and functions to lock/unlock the handler and make the MessageHandler thread-save
         self._messagelock = thread.newmutex()
@@ -182,10 +144,17 @@ local Base = Super:New ( {
 
 
     Disable = function (self)
+        self.xPL:Unsubscribe (self.xPLSubscribeFunction)
+        
         self._messagelock = nil
         
         local b = Super.Disable (self)
         return b
+    end,
+    
+    
+    -- catch xpl events handlers may want
+    xPLEventHandler = function (self,event,...)
     end,
 
 

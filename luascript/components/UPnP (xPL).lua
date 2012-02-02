@@ -25,7 +25,7 @@ local xPLUPnPComponentID = 13101
 
 -- upnp devices we can export to the g5 DM
 local DeviceClasses = {
-
+ 
     ['urn:schemas-upnp-org:device:MediaRenderer:1'] = require 'Components.UPnP (xPL).UPnP Devices.Media Renderer',
     ['urn:schemas-upnp-org:device:DimmableLight:1'] = require 'Components.UPnP (xPL).UPnP Devices.Dimmable Light',
 }
@@ -55,8 +55,10 @@ local DefaultSettings = {
     },
 
     CurrentUPnPDevices = {}, -- list of all currently enumerate upnp devices
-
+    
     KnownUPnPDevices = {}, -- list off all previously seen upnp devices indexed by uuid
+    
+    RemoveDMDeviceWhenUPnPDeviceLeaves = true,
 
 }
 
@@ -68,7 +70,7 @@ local Requires = {
         Type = 'Version',
         Identifier = 'Pro',
     },
-
+    
     { -- xPL
         Type = 'Component',
         Identifier = 13100,
@@ -77,7 +79,7 @@ local Requires = {
 
 
 local Events = table.makeset ({
-    'DeviceArrived',
+    'DeviceArrived',  
     'DeviceLeft',
     'DeviceVariable',
 })
@@ -97,13 +99,13 @@ local UPnP = Super:New ( {
     DefaultSettings = DefaultSettings,
     Requires = Requires,
     License = License,
-
+    
     UPnPXPLHandler = false, -- ref to UPnP handler component
-
+    
     SubscribeFunction = false,
-
+    
     InterfaceDevices = {}, -- device list that interface with the g5 dm and upnp/xpl indexed by uuid
-
+    
     KnownUPnPDevices = {}, -- list of all uupnp devices we have seen indexed by uuid
 
     Loaded = function (self)
@@ -182,23 +184,23 @@ local UPnP = Super:New ( {
         end
 
         self:LogLocal (0,'Starting')
-
+        
         self.UPnPXPLHandler = assert (ComponentManager:GetComponentUsingID (13101))
-
+        
         self.SubscribeFunction = function (...)
             self:XPLUPnPEventHandler (unpack (arg))
         end
-
+        
         self.UPnPXPLHandler:Subscribe (self.SubscribeFunction)
 
         local pdevices = self.UPnPXPLHandler:GetUPnPDevices ()
         for _,pdevice in pairs (pdevices) do
             self:UPnPDeviceArrived (pdevice)
         end
-
+        
         -- shouldn't need to do this
         --self.UPnPXPLHandler:RequestAnnounce ()
-
+        
         --idl = self.InterfaceDevices -- *********** delete
         
         return b
@@ -207,6 +209,7 @@ local UPnP = Super:New ( {
 
     Disable = function (self)
         self.UPnPXPLHandler:Unsubscribe (self.SubscribeFunction)
+        self:CloseInterfaceDevices ()
         return Super.Disable (self)
     end,
 
@@ -225,12 +228,12 @@ local UPnP = Super:New ( {
         return assert (self.ComponentSubDirectory)
     end,
 
-
+    
     -- receives events from the xPL UPnP handler component
-    XPLUPnPEventHandler = function (self,...)
+    XPLUPnPEventHandler = function (self,...) 
         --print ('got upnp event',unpack (arg))
         local event = arg [1]
-
+        
         if event == self.UPnPXPLHandler.Events.DeviceArrived then
             local pdevice = assert (arg [2])
             self:UPnPDeviceArrived (pdevice)
@@ -243,11 +246,11 @@ local UPnP = Super:New ( {
             local svar = assert (arg [4])
             self:UPnPDeviceVariableUpdate (pdevice,pservice,svar)
         end
-
+            
         self:Event (unpack (arg))  -- our events types are the same as for the upnp handler
     end,
-
-
+    
+    
     UPnPDeviceArrived = function (self,pdevice)
         self.Settings.KnownUPnPDevices [pdevice.deviceid] = {
             UUID = pdevice.deviceid,
@@ -258,34 +261,37 @@ local UPnP = Super:New ( {
         local idevice = self.InterfaceDevices [pdevice.deviceid]
         if idevice then
             --print ('updating interface device')
-            idevice:SetUPnPDevice (pdevice)
-            idevice:SetStatus ('Ok')
+            idevice:UPnPDeviceArrived (pdevice)
         else
             local class = DeviceClasses [pdevice.type]
-
+        
             if class then
                 local idevice = assert (class:Create (pdevice.deviceid))
                 idevice:SetStatus ('Ok')
                 self.InterfaceDevices [idevice:GetUUID ()] = idevice
-            else
+            else 
 --                print ('no device for type',pdevice.type)
             end
         end
     end,
-
-
+    
+    
     UPnPDeviceVariableUpdate = function (self,pdevice,pservice,svar)
         local idevice = self.InterfaceDevices [pdevice.deviceid]
         if idevice then
             idevice:UPnPVariableUpdate (pservice,svar)
         end
     end,
-
-
+    
+    
     UPnPDeviceLeft = function (self,pdevice)
         local idevice = self.InterfaceDevices [pdevice.deviceid]
         if idevice then
-            idevice:SetStatus ('Not Available')
+            if self.Settings.RemoveDMDeviceWhenUPnPDeviceLeaves then
+                idevice:Close ()
+            else
+                idevice:UPnPDeviceLeft ()
+            end
         end
     end,
     
@@ -294,10 +300,9 @@ local UPnP = Super:New ( {
         return self.UPnPXPLHandler:GetUPnPDevice (UUID)
     end,
 
-
+    
 	UPnPRequestAnnounce = function (self)
         local c = assert (ComponentManager:GetComponentUsingID (xPLUPnPComponentID))
-        
         c:RequestAnnounce ()
     end,
     
@@ -310,6 +315,18 @@ local UPnP = Super:New ( {
     GetKnownUPnPDevices = function (self)    
         return self.Settings.KnownUPnPDevices
     end,
+
+
+    CloseInterfaceDevices = function (self)
+        local t = self.InterfaceDevices 
+        self.InterfaceDevices  = {}
+
+        for _,idevice in pairs (t) do
+            idevice:Close ()
+        end
+        
+    end,
+
 
     CreateLogger = function (self)
         local logdir = self:GetSettings ().LogDirectory

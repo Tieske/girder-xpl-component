@@ -10,6 +10,8 @@ Provides an interface container between a UPnP xPL device and the G5 DM Device
 Maps variables/methods from the UPnP device to the controls of G5 DM device through a table of interfaces.  
 
 
+
+
 --]]
 
 
@@ -73,6 +75,23 @@ local Base = {
 	end,
     
     
+    -- gets text to for display in dui
+    GetDisplayName = function (self)
+        local pdevice = self:GetUPnPDevice ()
+        local ps = pdevice and pdevice.name or 'Offline'
+        
+        local s = self:GetDMDevice ():GetLocationName () .. '['..ps..']'
+        
+        return s
+    end,
+
+
+    --[[
+    
+    control interfaces
+    
+    --]]
+    
     -- subclass implement
     BuildInterfaces = function (self)
     end,
@@ -106,24 +125,40 @@ local Base = {
         
         return false
     end,
+    
+    
+    NotifyInterfacesDeviceLeft = function (self)
+        for _,interface in ipairs (self.Interfaces) do
+            interface:UPnPDeviceLeft ()
+        end
+    end,    
+    
+    
+    CloseInterfaces = function (self)
+        for _,interface in ipairs (self.Interfaces) do
+            interface:Close ()
+        end
+    end,    
+    
+    
             
             
-    -- gets text to for display in dui
-    GetDisplayName = function (self)
-        local pdevice = self:GetUPnPDevice ()
-        local ps = pdevice and pdevice.name or 'Offline'
-        
-        local s = self:GetDMDevice ():GetLocationName () .. '['..ps..']'
-        
-        return s
-    end,
-
-
     --[[
     
     UPnP Side
     
     --]]
+    
+    UPnPDeviceArrived = function (self,pdevice)
+        self:SetUPnPDevice (assert (pdevice))
+        self:SetStatus ('Ok')
+    end,
+    
+
+    UPnPDeviceLeft = function (self,pdevice)
+        self:SetUPnPDevice (false)
+        self:SetStatus ('Not Available')
+    end,
     
 
     GetUUID = function (self)
@@ -142,9 +177,11 @@ local Base = {
     
     
     GetUPnPDeviceService = function (self,serviceid)
-        for _,service in pairs (self:GetUPnPDevice ().services) do
-            if service.service == serviceid then
-                return service
+        if self:GetUPnPDevice () then
+            for _,service in pairs (self:GetUPnPDevice ().services) do
+                if service.service == serviceid then
+                    return service
+                end
             end
         end
         
@@ -307,9 +344,12 @@ local Base = {
 
 
 	Close = function (self)
+        self:CloseInterfaces ()
+    
 		if self.DMDevice then
 			self:RemoveDMDevice ()
 		end
+        self.UPnPDevice = false
 	end,
 
 

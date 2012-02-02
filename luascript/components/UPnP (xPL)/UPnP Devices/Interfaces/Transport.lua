@@ -28,21 +28,21 @@ local p2g = {
 }
 
 local g2pm = {
-    ['Stop'] = 'Stop',
-    ['Play'] = 'Play',
-    ['Pause'] = 'Pause',
-    ['Next'] = 'Next',
+    ['Stop'] = 'Stop', 
+    ['Play'] = 'Play', 
+    ['Pause'] = 'Pause', 
+    ['Next'] = 'Next', 
     ['Previous'] = 'Previous',
-}
+} 
 
 
 local tvs = {
-    'Stop',
-    'Play',
-    'Pause',
-    'Next',
+    'Stop', 
+    'Play', 
+    'Pause', 
+    'Next', 
     'Previous',
-}
+} 
 
 
 local Super = require 'Components.UPnP (xPL).UPnP Devices.Interfaces.Base'
@@ -50,16 +50,16 @@ local Super = require 'Components.UPnP (xPL).UPnP Devices.Interfaces.Base'
 local interface = Super:New ( {
 
     UPnPServiceID = 'urn:upnp-org:serviceId:AVTransport',
-
+    
     UPnPVariableName = 'TransportState',
-
+    
     DMControlID = 'Transport',
 
-
+    
     --[[
-
+    
     UPnP
-
+    
     --]]
 
 
@@ -70,21 +70,21 @@ local interface = Super:New ( {
         }
     end,
 
-
+    
     -- object used to get the value of the variable
     GetGetUPnPVariableValueObject = function (self)
         local service = self:GetUPnPDeviceService ()
         return service.methods ['GetTransportInfo']
     end,
-
-
+    
+    
     GetSetUPnPVariableValueObject = function (self,value)
         local methodname = assert (g2pm [value],value)
         local service = self:GetUPnPDeviceService ()
-
+        
         return assert (service.methods [methodname],methodname)
     end,
-
+        
 
     GetSetUPnPVariableValueParameters = function (self,value)
         if value == 'Play' then
@@ -92,13 +92,13 @@ local interface = Super:New ( {
                 0,
                 1,
             }
-            else
+        else
             return {
                 0,
             }
-            end
+        end
 	end,
-
+    
 
     UPnPVariableUpdate = function (self,pservice,svar)
         local value = self:GetUPnPVariableValue ()
@@ -109,9 +109,9 @@ local interface = Super:New ( {
             self:UpdateControl (new)
         end
     end,
-
-
-
+    
+    
+    
 	--[[
 
 	G5 DM Interface
@@ -122,11 +122,11 @@ local interface = Super:New ( {
     -- creates a control for the device (if needed), returns false if this control is not valid for the supplied upnp device
     CreateControl = function (self)
         local Control = Controls.Transport:New({ID = self.DMControlID, Name = self.DMControlID, Device = self:GetDMDevice (), Values = tvs,})
-
+        
         self:GetDMDevice ():AddControl(Control)
     end,
-
-
+    
+    
 } )
 
 

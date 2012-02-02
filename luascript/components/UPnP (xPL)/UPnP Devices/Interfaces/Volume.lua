@@ -22,19 +22,21 @@ local Super = require 'Components.UPnP (xPL).UPnP Devices.Interfaces.Base'
 local interface = Super:New ( {
 
     UPnPServiceID = 'urn:upnp-org:serviceId:RenderingControl',
-
+    
     UPnPVariableName = 'Volume',
-
+    
     DMControlID = 'Volume',
 
-
+    --RequestUPnPVariableAtStartup = true, 
+    
+    
     --[[
-
+    
     UPnP
-
+    
     --]]
-
-
+    
+    
     -- retuns a list of paramters to send the exexute function
     GetSetUPnPVariableValueParameters = function (self,value)
         return {
@@ -43,8 +45,8 @@ local interface = Super:New ( {
             value,
         }
 	end,
-
-
+    
+    
     GetGetUPnPVariableValueParameters = function (self)
         return {
             1,
@@ -66,14 +68,14 @@ local interface = Super:New ( {
         self:GetDMDevice ():AddControl(VolumeControl)
     end,
 
-
+    
     UpdateControl = function (self,value)
         value = tonumber (value)
-
+        
         Super.UpdateControl (self,value)
     end,
-
-
+    
+    
 } )
 
 

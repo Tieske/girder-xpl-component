@@ -20,7 +20,7 @@ local Base = {
     
     UPnPServiceID = false, -- service for this control  
     
-    UPnPService = false, -- direct ref to the service,-- not cannot store this as it changes when the devices come and go .... do not directly use!!!
+    UPnPService = false, -- direct ref to the service
     
     UPnPVariableName = false, -- name of the variable
     
@@ -66,7 +66,8 @@ local Base = {
         
         self:UpdateControl () -- sets the control value
         
-        if self.RequestUPnPVariableAtStartup then
+        -- get variable if we do not have it
+        if self.RequestUPnPVariableAtStartup and self:GetUPnPVariableValue () == nil then
             self:GetRemoteUPnPVariableValue ()
         end
         
@@ -83,20 +84,25 @@ local Base = {
     --]]
     
     
+    UPnPDeviceLeft = function (self)
+        self.UPnPService = false
+    end,
+    
+    
     GetUPnPDevice = function (self)
         return self.Parent:GetUPnPDevice ()
     end,        
     
     
     GetUPnPDeviceService = function (self,serviceid)
---        if not self.UPnPService then 
+        --if not self.UPnPService then 
             for _,service in pairs (self:GetUPnPDevice ().services) do
                 if service.service == self.UPnPServiceID then
                     self.UPnPService = service
                     break
                 end
             end
-  --      end
+        --end
         
         return self.UPnPService or false
     end,
@@ -112,9 +118,8 @@ local Base = {
     GetUPnPVariableValue = function (self)
         local variable = assert (self:GetUPnPDeviceServiceVariable ())
         --uv = variable
-        return variable.value or false
-    end,
-    
+        return variable.value
+    end,        
 
     -- subclasses to provide, returns a table of paramets to send the the exexute function
     GetSetUPnPVariableValueParameters = function (self,value)
@@ -177,7 +182,8 @@ local Base = {
     
     ExecuteUPnPMethodAsync = function (self,method,params,callback)
 --        callback = callback or function (...)
-        callback = function (...)
+        local callback = function (...)
+            print ('callback for ' ,method.name, table.tostring (params))
             self:UPnPExecuteCallback (unpack (arg))
         end
         --print ('async')
